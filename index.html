@@ -69,37 +69,52 @@
 
       <div style="text-align:center;">
               <h2>Lab 1: The Artemis board</h2>
-              <h2>Introduction</h2>
+              <h3>Introduction</h3>
               <p style="text-align: left;padding: 0px 30px;"> In lab 1, we setup Arudino IDE and tested the Apollo Artemis board over the IDE. The main goal of this lab is to
               get used to programming the board using Arduino IDE. Following the lab 1 spec, we first installed Arduino with Artemis board support, and then tested five different scripts, including Blinking, Serial, AnalogRead, MicrophoneOutput, and LED control by microphone, observing and verifying their functionalities.</p>
               <hr>
 
-              <h2>Arduino IDE Setup</h2>
-              The lastest vresion of Arduino IDE was downloaded from the Arudino official website and installed for the prelab. 
+              <h3>Arduino IDE Setup</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The lastest vresion 2.0.3 of Arduino IDE was downloaded from the Arudino official website and installed for the prelab. Following <a href="https://learn.sparkfun.com/tutorials/artemis-development-with-arduino?_ga=2.30055167.1151850962.1594648676-1889762036.1574524297&_gac=1.19903818.1593457111.Cj0KCQjwoub3BRC6ARIsABGhnyahkG7hU2v-0bSiAeprvZ7c9v0XEKYdVHIIi_-J-m5YLdDBMc2P_goaAtA4EALw_wcB"> Sparkfun setup instructions</a>, I put an additional URL in Files > Preferences > Additional Board Manager URL, and then installed the lastest version of Apollo3 Board package via Tools > Board > Board Manager and search for Apollo. Note that even after the installation of the Apollo3 package, plugging the Apollo board in the PC through USB, and selecting the correct COM port for the board, there was still not a option of SparkFun BlackBoard Artemis, which was shown in the sparkfun tutorial. Therefore, I choose RedBoard Artemis Nano as my board and confirmed my selection with the TA.</p>
+              <hr>
 
+              <h3>Blink</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turn off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/EF8L7n0hbrk" frameborder="0" allowfullscreen></iframe>
-                <h4 style="text-align:center;">Blink</h4>
+                <h4 style="text-align:center;">Lab 1 Video 1: Blink</h4>
               </div>
+              <hr>
 
+              <h3>Serial</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turn off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/tyZdv4GpHZw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                <h4 style="text-align:center;">Serial</h4>
+                <h4 style="text-align:center;">Lab 1 Video 2: Serial</h4>
               </div>             
+              <hr>
 
+              <h3>AnalogRead</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turn off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/fn4Wil9Vz_o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                <h4 style="text-align:center;">AnalogRead</h4>
+                <h4 style="text-align:center;">Lab 1 Video 3: AnalogRead</h4>
               </div>
+              <hr>
 
+              <h3>PDM</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turn off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/tPtjgdi_TdY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                <h4 style="text-align:center;">PDM</h4>
+                <h4 style="text-align:center;">Lab 1 Video 4: PDM</h4>
               </div>
+              <hr>
 
+              <h3>Meng Extra: "A" note to turn on LED</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turn off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/aK7hO3O-LW0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                <h4 style="text-align:center;">Meng Extra</h4>
+                <h4 style="text-align:center;">Lab 1 Video 5: Meng Extra: "A" note to turn on LED</h4>
               </div>
 
       </div>
