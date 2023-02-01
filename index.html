@@ -77,11 +77,11 @@
               <hr>
 
               <h3>Arduino IDE Setup</h3>
-              <p style="text-align: left;padding: 0px 30px;"> The lastest vresion 2.0.3 of Arduino IDE was downloaded from the Arudino official website and installed for the prelab. Following <a href="https://learn.sparkfun.com/tutorials/artemis-development-with-arduino?_ga=2.30055167.1151850962.1594648676-1889762036.1574524297&_gac=1.19903818.1593457111.Cj0KCQjwoub3BRC6ARIsABGhnyahkG7hU2v-0bSiAeprvZ7c9v0XEKYdVHIIi_-J-m5YLdDBMc2P_goaAtA4EALw_wcB"> Sparkfun setup instructions</a>, I put an additional URL in Files > Preferences > Additional Board Manager URL, and then installed the lastest version of Apollo3 Board package via Tools > Board > Board Manager and search for Apollo. Note that even after the installation of the Apollo3 package, plugging the Apollo board in the PC through USB, and selecting the correct COM port for the board, there was still not a option of SparkFun BlackBoard Artemis, which was shown in the sparkfun tutorial. Therefore, I choose RedBoard Artemis Nano as my board and confirmed my selection with the TA.</p>
+              <p style="text-align: left;padding: 0px 30px;"> The lastest vresion 2.0.3 of Arduino IDE was downloaded from the Arudino official website and installed for the prelab. Following <a href="https://learn.sparkfun.com/tutorials/artemis-development-with-arduino?_ga=2.30055167.1151850962.1594648676-1889762036.1574524297&_gac=1.19903818.1593457111.Cj0KCQjwoub3BRC6ARIsABGhnyahkG7hU2v-0bSiAeprvZ7c9v0XEKYdVHIIi_-J-m5YLdDBMc2P_goaAtA4EALw_wcB"> Sparkfun setup instructions</a>, I put an additional URL in Files > Preferences > Additional Board Manager URL, and then installed the lastest version of Apollo3 Board package via Tools > Board > Board Manager and search for Apollo. Note that even after the installation of the Apollo3 package, plugging the Apollo board in the PC through USB, and selecting the correct COM port for the board, there was still not a option of SparkFun BlackBoard Artemis, which was shown in the sparkfun tutorial. Therefore, I choose RedBoard Artemis Nano as my board and confirmed my selection with the TA. As a result, the scripts I ran for the following sections can be in a different directory than described in lab1 tutorial.</p>
               <hr>
 
               <h3>Blink</h3>
-              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turn off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
+              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. In the Blink script, we repetitively write the built-in LED to high, delay for a second, write the LED to LOW, delay for a second to generate a blinky effect. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turning off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/EF8L7n0hbrk" frameborder="0" allowfullscreen></iframe>
                 <h4 style="text-align:center;">Lab 1 Video 1: Blink</h4>
@@ -89,7 +89,9 @@
               <hr>
 
               <h3>Serial</h3>
-              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turn off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
+              <p style="text-align: left;padding: 0px 30px;"> The second test Serial output from a serial montior of the Arudino IDE. Serial Output, or UART, sends output stream to the serior monitor of the Arduino IDE. Similar to the printf in C and cout statments in C++, Serial.println() in the Arduino syntax allows printing strings and values of parameters, which could be very helpful for debugging. The only additional step we need to do here is to set a baud rate for data transmission by Serial.begin(115200), where 115200 Hz is the baud rate used in this example. On the other hand, we opened the serial monitor of the Arduino IDE BY clicking on the magnifier-like icon on the top-right corner of the IDE and set the baud rate to 115200 as well.<br>
+              Note that instead of going to File > Examples > Artemis Examples > Example2_Serial, I had to go to File > Examples > Apollo3 > Example4_Serial to execute the script. <br>
+              From the video below, we could oberserve that at first 10 lines with increased count numbers were printed, and then the program listened to whatever the user inputted via the keyboard, echoing and printing the input message via the serial monitor. Thus Serial was working!</p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/tyZdv4GpHZw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 <h4 style="text-align:center;">Lab 1 Video 2: Serial</h4>
@@ -97,7 +99,9 @@
               <hr>
 
               <h3>AnalogRead</h3>
-              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turn off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
+              <p style="text-align: left;padding: 0px 30px;"> In the third example, we tested the functionality of Analog Read. The board we used had an internal termperature sensor and the example AnalogRead program used an internal Analog-Digital-Converter(ADC) to get the temperature readings from the temperature sensor and repeatly printed those readings to the serial monitor. <br>
+              Note that instead of going to File > Examples > Artemis Examples > Example4_Analog, I had to go to File > Examples > Apollo3 > Example2_AnalogRead to execute the script. <br> 
+              From the video below, we could oberserve that the second column of output -- temp (Counts) -- gradually increased from 33300 to 33500 after my finger covered the temperature sensor of the board, and gradually decreased from 33500 back to 33300 after I removed my finger, which showed the Analog Read Script was working as expected! </p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/fn4Wil9Vz_o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 <h4 style="text-align:center;">Lab 1 Video 3: AnalogRead</h4>
@@ -105,7 +109,8 @@
               <hr>
 
               <h3>PDM</h3>
-              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turn off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
+              <p style="text-align: left;padding: 0px 30px;"> The fourth example used the PDM script which further utilized the Pulse-density-modulation(PDM) microphone on the board. This example script continously captured the sound around the microphone, performed Fast Fourier Transform(FFT), and printed out the loudest audio frequency to the serial monitor. <br>
+              From the video below, we could oberserve that the loudest frequencies printed out initially were random values, which was caused by background noise when recording the video. However, when I put a sound source, a online tone generator on my mobile phone, close enough to the chip, we could clearly see the printed values were in accordance with and very close to the set values on the tone generator. 434 Hz - 434 Hz, 757 Hz - 755 Hz, 1224 Hz - 1224 Hz, 2162 Hz - 2174 Hz, etc. This demonstrated PDM succcessfully. </p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/tPtjgdi_TdY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 <h4 style="text-align:center;">Lab 1 Video 4: PDM</h4>
@@ -113,7 +118,50 @@
               <hr>
 
               <h3>Meng Extra: "A" note to turn on LED</h3>
-              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turn off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
+              <p style="text-align: left;padding: 0px 30px;"> For the additional task for 5000-level students, we were required to to program the board such that its built-in LED was turned on when we played a musical "A" note over the spearker, and otherwise remained off. To achieve this effect, I first decided to use A4 (440 Hz) as the detection frequency. Second, I modified the PDM script in last section by (1) change the return type of the printloudest function such that the loudest frequency can be returned.</p>
+              <div align="left";> 
+                <h4> Original function </h4>
+                <pre><code>
+                void printLoudest(void) {
+                  ...
+                  ui32LoudestFrequency = (sampleFreq * ui32MaxIndex) / pdmDataBufferSize;
+                  ...
+
+                }
+
+                </code></pre>
+                <h4> Changed function </h4>
+                <pre><code>
+                uint32_t printLoudest(void) {
+                  ...
+                  ui32LoudestFrequency = (sampleFreq * ui32MaxIndex) / pdmDataBufferSize;
+                  ...
+                  return (ui32LoudestFrequency)
+
+                }
+
+                </code></pre>
+              </div>
+              <p style="text-align: left;padding: 0px 30px;"> (2) Initialize digital pin LED_BUILTIN as an output. </p>
+               <div align="left";> 
+                <pre><code>
+                // initialize digital pin LED_BUILTIN as an output.
+                pinMode(LED_BUILTIN, OUTPUT);
+                </code></pre>
+              </div>
+              <p style="text-align: left;padding: 0px 30px;"> (3) Read return value (loudest frequency) and turn built-in LED on if the returned value is close to 440 Hz. </p>
+               <div align="left";> 
+                <pre><code>
+                uint32_t result = printLoudest();
+                if (result <= 450 && result >= 430) {
+                  digitalWrite(LED_BUILTIN, HIGH);
+                } else {
+                  digitalWrite(LED_BUILTIN, LOW);
+                }
+                </code></pre>
+              </div>
+              <p style="text-align: left;padding: 0px 30px;"> 
+              From the video below, we could oberserve that the blue LED was turned on only when the output frequency from the tone generator was close to 440 Hz, thus proving the correctness of the code design.</p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/aK7hO3O-LW0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 <h4 style="text-align:center;">Lab 1 Video 5: Meng Extra: "A" note to turn on LED</h4>
