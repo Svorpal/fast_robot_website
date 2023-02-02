@@ -175,7 +175,44 @@
       <br>
       <div style="text-align:center;">
               <h2>Lab 2</h2>
-              <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
+              <h3>Introduction</h3>
+              <p style="text-align: left;padding: 0px 30px;"> In lab 1, we setup Arudino IDE and tested the Apollo Artemis board over the IDE. The main goal of this lab is to
+              get used to programming the board using Arduino IDE. Following the lab 1 spec, we first installed Arduino with Artemis board support, and then tested five different scripts, including Blinking, Serial, AnalogRead, MicrophoneOutput, and LED control by microphone, observing and verifying their functionalities.</p>
+              <hr>
+
+              <h3>Prelab Setup</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The lastest vresion 2.0.3 of Arduino IDE was downloaded from the Arudino official website and installed for the prelab. Following <a href="https://learn.sparkfun.com/tutorials/artemis-development-with-arduino?_ga=2.30055167.1151850962.1594648676-1889762036.1574524297&_gac=1.19903818.1593457111.Cj0KCQjwoub3BRC6ARIsABGhnyahkG7hU2v-0bSiAeprvZ7c9v0XEKYdVHIIi_-J-m5YLdDBMc2P_goaAtA4EALw_wcB"> Sparkfun setup instructions</a>, I put an additional URL in Files > Preferences > Additional Board Manager URL, and then installed the lastest version of Apollo3 Board package via Tools > Board > Board Manager and search for Apollo. Note that even after the installation of the Apollo3 package, plugging the Apollo board in the PC through USB, and selecting the correct COM port for the board, there was still not a option of SparkFun BlackBoard Artemis, which was shown in the sparkfun tutorial. Therefore, I choose RedBoard Artemis Nano as my board and confirmed my selection with the TA. As a result, the scripts I ran for the following sections can be in a different directory than described in lab1 tutorial.</p>
+              <hr>
+
+              <h3>Echo</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The first script we ran on our board was the example blink script. Going to File > Examples > 01.Basics > Blink, we compiled and executed the blink script without changing the baud rate. In the Blink script, we repetitively write the built-in LED to high, delay for a second, write the LED to LOW, delay for a second to generate a blinky effect. From the testing video below, we could observe that the built-in LED on the board started to to blink by a repetitive sequence of turning on to blue, resting for a second, turning off, and resting for a second. This observation met our expecatation and the blink test was successful.</p>
+              <div class="center-block">
+                <iframe width="640" height="360" src="https://www.youtube.com/embed/wqUucIv_nqI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <h4 style="text-align:center;">Lab 2 Video 1: Echo</h4>
+              </div>
+              <hr>
+
+              <h3>Get Time Millis</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The second test Serial output from a serial montior of the Arudino IDE. Serial Output, or UART, sends output stream to the serior monitor of the Arduino IDE. Similar to the printf in C and cout statments in C++, Serial.println() in the Arduino syntax allows printing strings and values of parameters, which could be very helpful for debugging. The only additional step we need to do here is to set a baud rate for data transmission by Serial.begin(115200), where 115200 Hz is the baud rate used in this example. On the other hand, we opened the serial monitor of the Arduino IDE BY clicking on the magnifier-like icon on the top-right corner of the IDE and set the baud rate to 115200 as well.<br>
+              Note that instead of going to File > Examples > Artemis Examples > Example2_Serial, I had to go to File > Examples > Apollo3 > Example4_Serial to execute the script. <br>
+              From the video below, we could oberserve that at first 10 lines with increased count numbers were printed, and then the program listened to whatever the user inputted via the keyboard, echoing and printing the input message via the serial monitor. Thus Serial was working!</p>
+              <div class="center-block">
+                <iframe width="640" height="360" src="https://www.youtube.com/embed/uJ80e9ePeGU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <h4 style="text-align:center;">Lab 2 Video 2: Get Time Millis</h4>
+              </div>             
+              <hr>
+
+              <h3>Notification Handler</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The second test Serial output from a serial montior of the Arudino IDE. Serial Output, or UART, sends output stream to the serior monitor of the Arduino IDE. Similar to the printf in C and cout statments in C++, Serial.println() in the Arduino syntax allows printing strings and values of parameters, which could be very helpful for debugging. The only additional step we need to do here is to set a baud rate for data transmission by Serial.begin(115200), where 115200 Hz is the baud rate used in this example. On the other hand, we opened the serial monitor of the Arduino IDE BY clicking on the magnifier-like icon on the top-right corner of the IDE and set the baud rate to 115200 as well.<br>
+              Note that instead of going to File > Examples > Artemis Examples > Example2_Serial, I had to go to File > Examples > Apollo3 > Example4_Serial to execute the script. <br>
+              From the video below, we could oberserve that at first 10 lines with increased count numbers were printed, and then the program listened to whatever the user inputted via the keyboard, echoing and printing the input message via the serial monitor. Thus Serial was working!</p>
+              <div class="center-block">
+                <iframe width="640" height="360" src="https://www.youtube.com/embed/ZmR6cKGYI4E" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <h4 style="text-align:center;">Lab 2 Video 3: Notification Handler</h4>
+              </div>             
+              <hr>
+
+
       </div>
 
     <hr id='lab3'>
