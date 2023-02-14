@@ -181,14 +181,22 @@
 
               <h2>Prelab</h2>
               <h3>Setup</h3>
-              <p style="text-align: left;padding: 0px 30px;"> Briefly describe the steps taken to set up your computer for Lab 2, showing any results (i.e. MAC address printing).</p>
+              <p style="text-align: left;padding: 0px 30px;"> To set up my own PC, I follow the steps in the tutorial. <br> (1) Install Python3 and Pip.   <br>
+                <img class="img-rounded" src="pics/lab2/lab2-1.png" alt="Generic placeholder image" height="100"> <br>(2) Install and set up virtual environment. <br>(3) activate the virtual environment, install python packages, and open Jupyter notebook. <br> (4) Run the example arduino code to get the MAC address of the board. Update connection.yaml with this MAC address.<img class="img-rounded" src="pics/lab2/lab2-2.png" alt="Generic placeholder image"> <br>(5) Run uuid4() on Jupyter notebook to generate a UUID. <br> (6) Update base_ble.py for Windows. <br> (7) Update ble_service and yaml configuration to have the same UUID.  <br> (7) Run demo.ipynb and received a error saying OS not supported (Windows 11). Switched to a lab PC and repeat (1) to (7) to get things working.</p>
               <hr>
 
               <h3>Codebase</h3>
-              <p style="text-align: left;padding: 0px 30px;"> Add a brief explanation of your understanding of the codebase and how Bluetooth works between your computer and the Artemis.</p>
+              <p style="text-align: left;padding: 0px 30px;"> On the Arduino side, the BLE library is used so that our board serves as a bluetooth peripheral: different BLE UUIDs taking care of different kind of data, BLE service providing three characteristics: BLEFloatCharacteristic, BLEIntCharacteristic, and BLECStringCharacteristic. The user uses different BLE functions along with Estrings to write these characteristics for sending data to PC. <br>
+              On the PC side, the python scripts set up a BLE controller and can detect the BLE device (Artemis Board). PC can read from characteristics or send data via different cmd commands. 
+              Both sides use RX and TX. 
               <hr>
 
               <h2>Lab Tasks</h2>
+              <h3>configurations</h3>
+              <p style="text-align: left;padding: 0px 30px;"> From the pictures below and in the setup, we can see the UUIDs and addresses match in arduino and python files.</p>
+        
+              <img class="img-rounded" src="pics/lab2/lab2-3.png" alt="Generic placeholder image">
+              <img class="img-rounded" src="pics/lab2/lab2-4.png" alt="Generic placeholder image">
               <h3>Echo</h3>
               <p style="text-align: left;padding: 0px 30px;"> The ECHO command requires a string type of data being sent from the PC to the Artemis Board, as well as an agumented string type of data being sent/echoed back from the board to the PC. To achieve this, </p>
               <p style="text-align: left;padding: 0px 30px;"> (1) In ble.arduino.ino, add ECHO to the command types and implement the ECHO switch case as a cmd type in handle_command(). The program extracts the string value sent from the PC and store it in a char array. The arugmented string is formed by a concatenation of a prefix, the char array, and a postfix in a straightfforward way. By using the estring library, I clear the tx_estring, append the prefix, char array, and postfix sequentailly, convert to sting to c string and send it back to the PC. </p>
@@ -249,15 +257,14 @@
                 </div>
 
               <div class="center-block">
-                <iframe width="640" height="360" src="https://www.youtube.com/embed/wqUucIv_nqI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <iframe width="640" height="360" src="https://www.youtube.com/embed/MRQYbszbRDs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 <h4 style="text-align:center;">Lab 2 Video 1: Echo</h4>
               </div>
       
               <hr>
 
               <h3>Get Time Millis</h3>
-              <p style="text-align: left;padding: 0px 30px;"> At here, we want a new command GET_TIME_MILLIS which requires the robot sent the time elapsed in milliseconds to the PC. To do this, like in echo, we first added <br>
-              From the video below, we could oberserve that at first 10 lines with increased count numbers were printed, and then the program listened to whatever the user inputted via the keyboard, echoing and printing the input message via the serial monitor. Thus Serial was working!</p>
+              <p style="text-align: left;padding: 0px 30px;"> (Code shown in the video) At here, we want a new command GET_TIME_MILLIS which requires the robot sent the time elapsed in milliseconds to the PC. To do this, on the robot side, we first clear the estring, and then added time by calling millis(), and write value to the tx string characteristic using the estrings. Note that I convert millis() from unsigned long to int so that estring did not throw a complaint. On the PC side, I call the command and read the received string characteristic.<br>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/uJ80e9ePeGU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 <h4 style="text-align:center;">Lab 2 Video 2: Get Time Millis</h4>
@@ -265,15 +272,46 @@
               <hr>
 
               <h3>Notification Handler</h3>
-              <p style="text-align: left;padding: 0px 30px;"> The second test Serial output from a serial montior of the Arudino IDE. Serial Output, or UART, sends output stream to the serior monitor of the Arduino IDE. Similar to the printf in C and cout statments in C++, Serial.println() in the Arduino syntax allows printing strings and values of parameters, which could be very helpful for debugging. The only additional step we need to do here is to set a baud rate for data transmission by Serial.begin(115200), where 115200 Hz is the baud rate used in this example. On the other hand, we opened the serial monitor of the Arduino IDE BY clicking on the magnifier-like icon on the top-right corner of the IDE and set the baud rate to 115200 as well.<br>
-              Note that instead of going to File > Examples > Artemis Examples > Example2_Serial, I had to go to File > Examples > Apollo3 > Example4_Serial to execute the script. <br>
-              From the video below, we could oberserve that at first 10 lines with increased count numbers were printed, and then the program listened to whatever the user inputted via the keyboard, echoing and printing the input message via the serial monitor. Thus Serial was working!</p>
+              <p style="text-align: left;padding: 0px 30px;"> For the notification handler, whose code implementation is in the video below , I write a callback function that takes UUID and bytearray and is activated by ble.start_notify. Therefore, whenever there is an update to the RX string (PC receiving data from the board), the nofitication handler is going to take the bytearray, convert to float, and store the updated data in a global variable. I did not call ble.stop_notify so that the PC side could constantly check and update the global list by the new data sets. At this, get time millis is tested for the handler and we can see the time value is only getting updated when a new ble.sendcommand() is called (a new value is sent from Arduino to PC).</p>
               <div class="center-block">
                 <iframe width="640" height="360" src="https://www.youtube.com/embed/ZmR6cKGYI4E" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                 <h4 style="text-align:center;">Lab 2 Video 3: Notification Handler</h4>
               </div>             
               <hr>
 
+              <h3>GET_TEMP_5S</h3>
+              <p style="text-align: left;padding: 0px 30px;"> For get temperature in 5 seconds, we are asked to send an array of five timestamped internal die temperature readings from the Arduino to the PC. To do this, on the Arduino side, I first clear the tx estring, and then append five pairs of time+temperature data, with a delay of 1 second between colloecting each subsequent pair of data. The maximum estring length is 151, which is enough for five pairs of time+temp data. From the output, we can see the five pairs of time and temperature data are correct. Then I update the notification handler to extract the correct time and temperature data and put them in two respective global lists: time and temperature, whose values meet our expectation as we print them out in the video.  </p>
+              <img class="img-rounded" src="pics/lab2/lab2-8.png" alt="Generic placeholder image" height="300"> 
+              <div class="center-block">
+                <iframe width="640" height="360" src="https://www.youtube.com/embed/F8rORZPcuWU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <h4 style="text-align:center;">Lab 2 Video 4: GET_TEMP_5S</h4>
+              </div>             
+              <hr>
+
+              <h3>GET_TEMP_5s_RAPID</h3>
+              <p style="text-align: left;padding: 0px 30px;"> For this task, we are asked to send a array of 5 seconds of rapidly collected data. To this end, wo modified the above code snippet by changing the delay in each iteration and adding an additional outer loop. In other words, we collect five pairs of time and temperature data, add them to the estring, send the data, and repeat these three steps for 100 times with a delay of 10 milliseconds between each. The delay time is shortened proportionally to match the requirement of total time of 5 seconds. Printing the list values we can see there are 500 pairs of time and temp data, where time[0] corresponds to temp[0] and so on.  This is because each estring has 5 pairs and there are 100 estrings in total. Note that the data are not in time order because we have no guarantee that the PC side will receive everything in the exact same order that the Arduino side sent them.</p>
+              <img class="img-rounded" src="pics/lab2/lab2-9.png" alt="Generic placeholder image" height="300"> 
+              <div class="center-block">
+                <iframe width="640" height="360" src="https://www.youtube.com/embed/b3WnrI4fF-s" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                <h4 style="text-align:center;">Lab 2 Video 5: GET_TEMP_5s_RAPID</h4>
+              </div>             
+              <hr>
+
+              <h3>Limitations</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The Artemis Board has 384kB of RAM which means 384000 bytes. Our setup is to send 5 seconds of 16-bit values taken at 150 Hz, which means 2 byte * 5 seconds * 150 cycles/second = 1500 bytes. Diving 384000 over 1500 results in 256. In other words, the Artemis Board is going to perform this action of "send 5 seconds of 16-bit values taken at 150 Hz" for at most 256 times before running out of RAM memory space, which is somewhat limited. </p>    
+              <hr>
+
+             <h3>Effective Data Rate</h3>
+              <p style="text-align: left;padding: 0px 30px;"> For this part, I get the idea from <a href="https://qd39l.github.io/fast-robots/lab2.html"> 2022 student Owen Deng's Lab 2 website. </a> The arduino side is like using the ECHO command, constantly receiving different strings from the PC and sending them back. The PC side (code below) continously sends strings ranging from a size of 5 to 120 (not exceeding max string length) and record the time for sending and receiving each string with a certain size. Note that 10 trials are performed for each size length and average is computed to reduce error. From the plot below, we can see a clear positive relationship between the Message size in bytes and Time in seconds, which makes sense since longer words take longer to send and receive. Shorter words tend to have lower overhead while longer words having the opposite.</p>  
+              <img class="img-rounded" src="pics/lab2/lab2-7.png" alt="Generic placeholder image" height="450">  
+              <img class="img-rounded" src="pics/lab2/lab2-5.png" alt="Generic placeholder image"  height="700">          
+              <hr>
+
+             <h3>Reliability</h3>
+              <p style="text-align: left;padding: 0px 30px;"> To test reliability, we need to increase the rate of data transmission from the Artemis board to the PC. To do so, I modified the GET_TEMP_5s_RAPID further on the Arduino side by reducing the delay time for each iteration to 1 millisecond only. The outermost loop is changed from 100 to 1000 to match the 5-second requirement. On the PC side, we can see that all 5000 pairs of time and temp data are received correctly and none of them are empty. Based on this, we can conclude that the computer is still able to read everything without miss anything from the board even at a very high rate.</p>  
+              <img class="img-rounded" src="pics/lab2/lab2-10.png" alt="Generic placeholder image" height="400">
+              <img class="img-rounded" src="pics/lab2/lab2-6.png" alt="Generic placeholder image" height="600">         
+              <hr>
 
       </div>
 
