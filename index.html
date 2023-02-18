@@ -176,7 +176,7 @@
       <div style="text-align:center;">
               <h2>Lab 2 : Bluetooth</h2>
               <h2>Introduction</h2>
-              <p style="text-align: left;padding: 0px 30px;"> In lab 2, we explore the bluetooth connection and communication between the Artemis Board and PC. </p>
+              <p style="text-align: left;padding: 0px 30px;"> In lab 3, we explore the use of two Time-of </p>
               <hr>
 
               <h2>Prelab</h2>
@@ -316,10 +316,90 @@
       </div>
 
     <hr id='lab3'>
-      <br>
+    <br>
       <div style="text-align:center;">
-              <h2>Lab 3</h2>
-              <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
+              <h2>Lab 3 : Time of Flight Sensors</h2>
+              <h2>Introduction</h2>
+              <p style="text-align: left;padding: 0px 30px;"> In lab 3, we explore the use of two Time of Flight (TOF) sensors. We play around and test these sensors under different conditions for their future use associated with the actual robotic car. We would like to have a good rate and accuracy with sampling so that our robot can perform well. </p>
+              <hr>
+
+              <h2>Prelab</h2>
+              <h3>I2C address</h3>
+              <p style="text-align: left;padding: 0px 30px;"> From the datasheet, we know the default I2C address of any ToF sensor is 0x52. Note that using only one ToF sensor with the default I2C address is fine but using two of them at the same time can cause address conflicts such that the board would get confused. <br>
+                <img class="img-rounded" src="pics/lab3/lab3-1.png" alt="Generic placeholder image" height="400"> </p>
+              <hr>
+
+              <h3>Approach to use</h3>
+              <p style="text-align: left;padding: 0px 30px;"> My approach is resolve this issue is to use the shutdown pins to shut one sensor down and set the I2C address of the other sensor to a different and non-conflicting one. Therefore, when the board (master) reads the addresses of the ToFs (slaves), it will get different addresses.  </p>
+              <hr>
+
+              <h3>Placement</h3>
+              <p style="text-align: left;padding: 0px 30px;"> I would like to place one sensor in the front of the car and the other on the side of the car. On one hand, the front sensor will be able to detect obstacles in front of the cars and the side sensor will be able to detect obstacles while the car is turning. My placement sacrifices part of the accuracy from placing both sensors in the front of the car for the more angle/range of measurement from different directions. However, I will still be unable to detect obstacles on the other side or at the back of the car where no sensor is installed. So in my future algorithm design, I will try to avoid those situations. </p>
+              <hr>
+
+              <h3>Wiring Diagram</h3>
+              <p style="text-align: left;padding: 0px 30px;">  </p>
+              <img class="img-rounded" src="pics/lab3/lab3-11.png" alt="Generic placeholder image"  height="600" >
+              <hr>
+
+              <h2>Lab Tasks</h2>
+              <h3>ToF sensor connections</h3>
+              <p style="text-align: left;padding: 0px 30px;"> The left picture shows connection of both ToF sensors to the QWIIC breakout board and furthre to the Artemis board. Note that red wire is for voltage, black wire is for ground, yellow wire is for SCL and orange wire is for SDA. The right picture shows where the shutdown pins of both sensors are soldered by blue wires onto the board. (pin 8 and pin 10).</p>
+              <div align="center";> 
+              <img class="img-rounded" src="pics/lab3/lab3-7.jpg" alt="Generic placeholder image"  height="400" >
+              <img class="img-rounded" src="pics/lab3/lab3-9.jpg" alt="Generic placeholder image"  height="400" >
+              </div>
+              <hr>
+              <h3>Artemis Scanning for I2C</h3>
+              <p style="text-align: left;padding: 0px 30px;">To do this part, I detached one of the two sensors and burned Example05_Wire_I2C into the board. As shown below, scanning results in an address of 0x29. This is because the last bit for the original address 0x52 stands for read and write and when Artemis reads the I2C address, it disregard this LSB by right shifting one bit, resulting a change from 01010010 to 00101001, or from 0x52 to 0x29.</p>
+              <img class="img-rounded" src="pics/lab3/lab3-2.png" alt="Generic placeholder image"  height="300" >
+              <hr>
+
+              <h3>Choose Range Mode</h3>
+              <p style="text-align: left;padding: 0px 30px;"> There are three ToF modes. Short mode with a detection range of 1.3m, medium mode with a detection range of 3m, and a long default mode of a detection range of 4m. Note that distanceSensor.setDistanceModeMedium() is not actually included in the Sparkfun_VL53L1X.h header file. According to the datasheet of the sensors, the short mode gets affected by the ambient light the least, resulting in its relatively better performance than the medium and long range modes in bad enviornments. Plus I think 1.3 meter is a long enough distance for the robot to detect obstacles and take actions. Therefore, I would like to select the short mode. To create accurate measurement, I take off the protection firm from one sensor and place it as shown in the follwing picture. The sensor is held upright to the table and the box is used as the obstacle getting detected by the sensor. A ruler is used for actual distance indication.</p>
+              <img class="img-rounded" src="pics/lab3/lab3-8.jpg" alt="Generic placeholder image"  height="400">
+              <p style="text-align: left;padding: 0px 30px;"> Measurements result in the following picture and plots:  </p>
+              <img class="img-rounded" src="pics/lab3/lab3-10.png" alt="Generic placeholder image"  height="400">
+              <br> <br>
+              <img class="img-rounded" src="pics/lab3/lab3-14.png" alt="Generic placeholder image"  height="400">
+              <br> <br>
+              <img class="img-rounded" src="pics/lab3/lab3-15.png" alt="Generic placeholder image"  height="400">
+              <br> <br>
+              <p style="text-align: left;padding: 0px 30px;"> I measured the distance from 70mm to 140 mm. From the plots, we can see that the measured distance is very close to the actual distance. The absoute errors and standard deviations fluctuate but stay close to zero. This means our sensor get pretty accurate measurements. </p>
+              <hr>
+
+              <h3>Two sensors in parallel</h3>
+              <p style="text-align: left;padding: 0px 30px;"> To get sensors work in parallel, I use the shutdown pin of one sensor, shut it down and set the address of the other sensor to 0x32 by the code below.</p>
+              <img class="img-rounded" src="pics/lab3/lab3-3.png" alt="Generic placeholder image"  height="100">
+              <p style="text-align: left;padding: 0px 30px;"> Next, I create two global instances of sensors, initialize and run both of them. When both sensors are ready, I collect data and print them out on the serial monitor. From the serial monitor, we can see both sensors function correctly. I placed the sensors in proximity so the 20mm difference makes sense.  </p>  
+              <img class="img-rounded" src="pics/lab3/lab3-4.png" alt="Generic placeholder image"  height="800">
+              <hr>
+
+              <h3>Tof sensor speed</h3>
+              <p style="text-align: left;padding: 0px 30px;"> To test the measurement speed of sensors, I only use a single sensor -- sensor 1.  <br> I notice that in the example code, a while loop with delay of 1 second for each iteration is used (line 56 - 59), which can take a lot of time. By measuring the time difference between sensor 1 start ranging and sensor 1 stop ranging, I got the time for each measurement and printed it out. As shown in the monitor, it takes about 95-103 ms for each measurement to complete. </p>
+              <img class="img-rounded" src="pics/lab3/lab3-5.png" alt="Generic placeholder image"  height="400">
+              <p style="text-align: left;padding: 0px 30px;"> To improve the speed of measurement, I transformed the while loop with delay to a if condition without any delay. On line 56. if both sensors are ready, the program will move on to measure and print out result immediately. From the serial output, we can see that the measurement time is around 11ms each time, which is reduced significantly from the original code. </p>
+              <img class="img-rounded" src="pics/lab3/lab3-6.png" alt="Generic placeholder image"  height="700">
+              <p style="text-align: left;padding: 0px 30px;"> Moreover, I think another limiting factor is the maximum speed of data transfer from the sensor to the Arduino.</p>
+              <hr>
+
+              <h3>Time v Distance</h3>
+              <p style="text-align: left;padding: 0px 30px;"> Editing my work from lab2, I add an additional command type -- GET_SENSOR. On the arduino side, this command type has a infinite while loop that constantly captures distance data from sensors and sent them along with time data to the PC. On the PC side, the notification handler is modified to take the new data and store them in a global sensor array. By printing out the content of the sensor array, we can see the timestamped sensor data. Note that since the loop on the board side is non-stopping, the sensor array is expanding all the time until it reaches its maximum capacity.</p>
+              <img class="img-rounded" src="pics/lab3/lab3-13.png" alt="Generic placeholder image"  height="500">
+              <img class="img-rounded" src="pics/lab3/lab3-12.png" alt="Generic placeholder image"  height="700">
+              <hr>
+
+              <h3>Infrared transmission based sensors</h3>
+              <p style="text-align: left;padding: 0px 30px;">My information is from <a href="https://electricalfundablog.com/infrared-sensor/"> this site</a>. The mechanism of IR sensors involves the use of an IR transmitter and an IR receiver. The IR transmitter sends IR and gets reflected by objects and obstacles, and the IR receiver gets the reflected infrared. Based on the time of sending and receiving, as well as the intensity of the received IR, the sensor is able to find the distance. There are many different types of infrared sensors. Active IR sensor contains both transmitter and receiver, radiating energy, receving, and analyzing energy. Passive IR sensors, on the other hand, only contain detectors. They use objects as IR source and transmitter, capturing and analyzing energy radiated by the objects. Passive IR sensor contains Thermal Infrared Sensor and Quantum Infrared Sensor. Thermal Infrared sensors are independent of wavelength, use heat as energy source, are slow with their detection time and response time. Quantum Infrared Sensor are dependent on wavelengths, have high detection time and response time, and require frequent cooling for precise measurement. Our ToF sensor is a kind of active IR sensors. There is also aother common type of active IR sensors called LiDAR (Light Detection and Ranging), which uses lasers and is less affected by environment disturbances. </p>
+              <hr>
+
+              <h3>Colors and textures</h3>
+              <p style="text-align: left;padding: 0px 30px;"> 
+              (1) colors: I tested red, green, blue, white, black, orange, violet, purple, pink, grey, and the readings for different colors are almost identiacal to each other. Thus, I make a conclusion that colors do not affect measurement of our ToF sensors. <br>
+              (2) textures: Things get interesting when it comes to textures. For rough surfaces like boxes, mouses, etc., the measurements are still very accurate. For very smooth surfaces like screens and mirrors, the measures distance is significantly larger than the actual distance. For example, for an actual distance of around 60mm, the measured result was around 110mm. My speculation is that for smooth surfaces, specular reflection actaully takes place instead of diffuse reflection for rough surfaces. Since the smooth surfaces I used were not perfectly smooth, there was still IR reflected back and get captured by the receiver, but the amount of IR light receive is much smaller compared to rough surfaces. Also, some IR might get reflected to other directions and take longer time to travel back to the receiver, thereby increasing the measured distance. For transparent objects like glasses, the measured readings were huge. For example, my glasses placed at a distance of 50mm result in a measurement of 2500mm. My speculation is that the IR actaully penetrate the glasses and get reflected by obstacles further far away. 
+              </p>
+              <hr>
+
       </div>
 
     <hr id='lab4'>
