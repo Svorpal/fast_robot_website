@@ -416,19 +416,220 @@
               <img class="img-rounded" src="pics/lab4/lab4-9.jpg" alt="Generic placeholder image", width="500", height="500">
               <img class="img-rounded" src="pics/lab4/lab4-10.jpg" alt="Generic placeholder image", width="500", height="500">
             </div>
-            
-            
+            <iframe width="640" height="360" src="https://www.youtube.com/embed/tonvRFozQi0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            <br> <br>
             <p style="text-align: left;padding: 0px 30px;"> 
-            In the left picture, 
-            From the video, we can see that the 
+            In the left picture, the IMU is connected to the QWIIC breakout board, which is further connected to the Artemis board and two ToF sensors. On the right, the backside of the connected IMU is shown, where we can clearly see the ADR pin is not soldered/connected. Regarding the AD0_VAL value, it is at the back of the IMU. If soldered together, the AD0_VAL will need to have a value of 0, thereby making the LSB of the IMU I2C address to be 0. On the other hand, if not solderd, by default teh AD0_VAL will need to have a value of 1, which makes the LSB of IMU I2C address to be 1. This mechanism allows connections of two ICM 20948 IMUs. Since I am only using one IMU, I choose the default one, not soldering the ADR pin and setting AD0_VAL to be 1 in the example Arduino code. From the video above, we can see that the the LED blinks three times on start-up, indicating the IMU is setup before running. After the IMU starts its measuremnet, from the Arudino serial plotter, we are able to see the eight types of data, listed as source 1, source 2, source 3, ... sounrce 8, and stands for pitch from accelerometer, roll from accelerometer, pitch from gyroscope , roll from gyroscope, yaw from gyroscope, pitch from Magnetometer, roll from Magnetometer, yaw from Magnetometer are shown. Although the serial output contains a mix of data from accelerometer, gyroscope, and magnetometer and oks a bit messy, when I turn around or move the IMU in different directions, we are able to see the plotting changes according. To get a clearer picture of measurements, we further processed the IMU data and test accelerometer, gyroscope, and magnetometer individually. 
             </p>
             <hr>
 
+            <h3>Accelerometer</h3>
+            <h3>Pitch and Roll</h3>
+            <p style="text-align: left;padding: 0px 30px;"> First, I measure pitch and roll data using formulas given in the lecture, without any filtering. Code is shown below, with a delay of 100 ms to slow down measurement so that I can observe data change more easily: </p>
+            <img class="img-rounded" src="pics/lab4/lab4-3.png" alt="Generic placeholder image", height="300">
+            <br><br>
+            <img class="img-rounded" src="pics/lab4/lab4-1.png" alt="Generic placeholder image", height="300">
+            <p style="text-align: left;padding: 0px 30px;"> From the Raw Pitch data plot, we can see a clear transition from -90 to 0 and to +90. However, there are many noise and outliers present.  </p>
+            <br><br>
+            <img class="img-rounded" src="pics/lab4/lab4-2.png" alt="Generic placeholder image", height="350">
+            <p style="text-align: left;padding: 0px 30px;"> From the Raw Roll data plot, we can see clear transitions from -90 to 0 and to +90. Noise is minimum. <br>
+            By looking at the plots, as well as the raw data, I could tell the data was pretty accurate in general, as the stablized values were around -90 , 0 , and 90 degrees respectively. However, the pitch raw data contains a lot of outliers and that why we need  low pass complementary filter. </p>
+            <br><br>
+            <hr>
+            <h3>Complementary Low Pass Filter</h3>
+            <p style="text-align: left;padding: 0px 30px;"> To implement the low pass filter, I learn from the <a href="https://cei-lab.github.io/FastRobots-2023/lectures/FastRobots-4-IMU.pdf"> lecture notes </a> and <a href="https://pages.github.coecis.cornell.edu/rc627/ECE-4960/lab3.html">  TA Ryan Chan's page.</a> </p>
+            <img class="img-rounded" src="pics/lab4/lab4-13.png" alt="Generic placeholder image", height="350">
+            <p style="text-align: left;padding: 0px 30px;"> To apply this formula, I first use FFT on pitch and roll data to find the cutoff frequency fc. From plots a cutoff frequency of 6 Hz is good to get rid of the high frequency noise in the pitch plot. For roll, the data is already clean but I also try different cutoff frequencies on it. </p>
+            <img class="img-rounded" src="pics/lab4/lab4-11.png" alt="Generic placeholder image", height="700">
+            <img class="img-rounded" src="pics/lab4/lab4-12.png" alt="Generic placeholder image", height="700">
+            <p style="text-align: left;padding: 0px 30px;"> I calculat the sampling time by the folliwng code. Sampling time is around 2.5 ms. </p>
+            <img class="img-rounded" src="pics/lab4/lab4-4.png" alt="Generic placeholder image", height="700">
+            <p style="text-align: left;padding: 0px 30px;"> And then I compute alpha and implement the complementary LPF by the following code. </p>
+            <img class="img-rounded" src="pics/lab4/lab4-5.png" alt="Generic placeholder image", height="150">
+            <p style="text-align: left;padding: 0px 30px;"> The filtered pitch data is shown below, we can see that the noise has been filtered. For roll, the original data was already clean enough. Though I tried multiple fc values for roll, they only made the sampling nosier so I decided not to use any LPF for roll. </p>
+            <img class="img-rounded" src="pics/lab4/lab4-14.png" alt="Generic placeholder image", height="300">
+            <hr>
+
+            <h3>Gyroscope</h3>
+            <h4>pitch, roll, and yaw</h4>
+            <p style="text-align: left;padding: 0px 30px;">  To compute pitch, roll, and yaw, I used the equations from lecture notes and also looked at professor's example code. Code implementation is below, delays of 100ms are added for easier measurement: </p>
+            <br><br>
+            <img class="img-rounded" src="pics/lab4/lab4-6.png" alt="Generic placeholder image", height="200">
+            <br><br>
+            <p style="text-align: left;padding: 0px 30px;">  To get a clear picture of how the measurements of gyroscope look like, I turn the IMU around in the x, y, z direction for degrees ranging from -90, to 0, and to 90, and plot the measured data. </p>
+            <br><br>
+            <img class="img-rounded" src="pics/lab4/lab4-7.png" alt="Generic placeholder image", height="800">
+            <br><br>
+            <p style="text-align: left;padding: 0px 30px;"> From the raw data and plots shown, we can see that although the data is not so noisy, their values are not accurate. In the plots for pitch and roll, the data points go to as high as 100-110 degress instead of 90 degrees. On the other hand, in the yaw data plot, the lowest angle go to -110 instead of -90. This is caused by drifting, an intrinsic feature of gyroscope. Note that to record the data into logs I need to open another serial software -- Tera Team, and changed its baud rate and CR+LF. This process requires placing the IMU for some time before measurement, during which drifing has already created a significant impact. To verify my idea, I places the IMU still and observes how data changes.</p>
+            <br><br>
+            <img class="img-rounded" src="pics/lab4/lab4-8.png" alt="Generic placeholder image", height="800">
+            <br><br>
+            <p style="text-align: left;padding: 0px 30px;"> These plots coincides with the previous ones. The pitch and roll gradually increase while the yaw gradually decrease even with the IMU not moving at all. Compared to the raw measurement from the accelerometer, pitch is less noisy from gyroscope than accelerometer while the roll is similar in noisiness. However, ptich and roll suffers from drifing a lot in gyroscope so gyroscope data are not accurate. Moreover, I tried changing the sampling frequency by adding delay(10), delay(100), delay(1000) but none of them solved the drifting problem.</p>
+            <hr>
+            <h4>complimentary filter</h4>
+            <img class="img-rounded" src="pics/lab4/lab4-15.png" alt="Generic placeholder image">
+            <p style="text-align: left;padding: 0px 30px;"> Based on the formula above, I implement the complimentary filter. I found that this filter was not able to solve the drifting but could reduce noise in the accelerometer. And combing measurements from the accelerometer with those from the gyroscope could successfully tackle drifting. Running the code implementation below, from the video, we can see that the combined pitch and roll values are stablized and accurate without noise and drifting.</p>
+            <img class="img-rounded" src="pics/lab4/lab4-16.png" alt="Generic placeholder image", height="400">
+            <iframe width="640" height="360" src="https://www.youtube.com/embed/1EImXRSoLNo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 
+            <h3>Sample Data</h3>
+            <p style="text-align: left;padding: 0px 30px;">Similar to Lab 3, I don't the wait for the IMU data to be ready. Instead, I check if data is ready in every iteration of the main loop and store that value. I removed any delays and Serial.print statements in my ardunio code to reduce delays. Below is my stored time-stamped IMU data in 3 arrays: time, pitch, and roll. By looking at the increments in the time stamp, I oberserved that I am able to sample data about every two milliseconds. </p>
+            <br><br>
+            <img class="img-rounded" src="pics/lab4/lab4-17.png" alt="Generic placeholder image", height="700">
+            <br><br>
+            <p style="text-align: left;padding: 0px 30px;">My initial setup was to put the accelermoeter and gyroscope calculation in the same while loop with the bluetooth commands of writing the string charactristics. However, this would result in huge drifting in the gyroscope measurements because the dt in gyroscope calcaution should be instantenous and as small as possible but the bluetooth write and send commands made this process long. It does not make sense for the gyroscope to calculate a constant angular acceleartion over hundreds of milliseconds. As shown in the output above, we can observe that the pitch and roll drfit too much. To solve this issue, I read and store data in local arrays first. After finishing reading and storing, I send the elements of the array one by one. Note that I keep reading data from ToF sensors and the IMU as fast as possible, but only store one set of data every 0.1 second. This is to prevent data stack overflow on both the Artemis side and the PC side. </p>
+    <div align="left";>
+                          <pre><code>
+    case GET_IMU:
+    // local arrays storing data
+      int time_arr[150];
+      float pitch_arr[150];
+      float roll_arr[150];
 
-              
+    // variables for counting/timing
+      int index;
+      index = 0;
+      float start_reading;
+      start_reading = millis();
+      float prev_reading;
+      prev_reading = millis();
+      float curr_time_imu;
+      curr_time_imu = millis();
+
+      // run for 5 seconods 
+      while(curr_time_imu - start_reading <= 5000) {
+        curr_time_imu = millis();
+
+          // non-stop reading
+          if(myICM.dataReady()){
+              myICM.getAGMT(); 
+              pitch_a = atan2(myICM.accY(),myICM.accZ())*180/M_PI; 
+              const float RC =  1/(2*3.1415*6);
+              const float T = 2.5/1000;
+              const float alpha = T/(T+RC) ;
+              pitch_a_LPF[n] = alpha*pitch_a + (1-alpha)*pitch_a_LPF[n-1];
+              pitch_a_LPF[n-1] = pitch_a_LPF[n];
+              dt = (micros()-last_time)/1000000.;
+              last_time = micros();
+              pitch_g = pitch_g + myICM.gyrX()*dt;
+              pitch = (pitch+myICM.gyrX()*dt)*0.9 + pitch_a_LPF[n]*0.1;
+              roll_a  = atan2(myICM.accX(),myICM.accZ())*180/M_PI; 
+              roll_g = roll_g + myICM.gyrY()*dt;
+              roll = (roll+myICM.gyrY()*dt)*0.9 + roll_a*0.1;
+
+              // only store once every 0.1 second
+              if(curr_time_imu - prev_reading > 100) {
+                time_arr[index] = (int)millis();
+                pitch_arr[index] = pitch;
+                roll_arr[index] = roll;
+                index++;
+                prev_reading = curr_time_imu;
+              }
+          }
+        }
+
+        // send all the arrays via Bluetooth
+        for(int i = 0; i != index; i++){
+            // Serial.print(i)
+            tx_estring_value.clear();
+            tx_estring_value.append("T:");
+            tx_estring_value.append(time_arr[i]);
+            tx_estring_value.append("|P:");
+            tx_estring_value.append(pitch_arr[i]);
+            tx_estring_value.append("|R:");
+            tx_estring_value.append(roll_arr[i]);
+            tx_estring_value.append("|");
+            tx_characteristic_string.writeValue(tx_estring_value.c_str());
+        }
+    break;
+              </code></pre>
+    </div>
+
+    <p style="text-align: left;padding: 0px 30px;"> After my changes, from the python output below, we can clearly see that the pitch and roll data are stable now. In later labs, I will wrap the read data and store data into two separate functions for clearness. </p>
+    <br><br>
+    <img class="img-rounded" src="pics/lab4/lab4-18.png" alt="Generic placeholder image", height="500">
+    <br><br>
+    <p style="text-align: left;padding: 0px 30px;"> Now I combine my code from lab 2 for the ToF sensors with the code for the IMU. Intially in the if statement where checking if the devices are ready, I check the ToFs and IMU together. So if one of them is not ready, the program will go to the next iteration. This actaully lead to drifting in pitch and roll values again. My understanding is that the ToF sensors take longer time than the IMU to get ready, which will delay the IMU calcuation and making dt larger in the gyroscope computation. To avoid this, I check the sensors and the IMU ready separately as shown in the code below, which succesfully addressed the issue. From the video and the Python side output shown below, we can see the program is able to capture at least 5s worth of ToF data and IMU data and send it over Bluetooth to the computer. Note that I did not convert the strings to floats while plotting for this part so the graph axises looked a bit messy and not sorted, but from the print output we can see the data we get were correct. </p>
+
+    <div align="left";>
+      <pre><code>
+      case GET_TOF_IMU:
+      ... 
+      while(curr_time_imu - start_reading <= 5000) {
+        curr_time_imu = millis();
+        distanceSensor1.startRanging(); //Write configuration bytes to initiate measurement
+        distanceSensor2.startRanging(); //Write configuration bytes to initiate measurement
+        //  tof1 ready
+        if(distanceSensor1.checkForDataReady()) {
+            distance1 = distanceSensor1.getDistance(); //Get the result of the measurement from the sensor
+            distanceSensor1.clearInterrupt();
+            distanceSensor1.stopRanging();
+        } 
+        //  tof2 ready
+        if (distanceSensor2.checkForDataReady()){
+            distance2 = distanceSensor2.getDistance(); //Get the result of the measurement from the sensor
+            distanceSensor2.clearInterrupt();
+            distanceSensor2.stopRanging();
+        } 
+
+        // IMU ready
+        if (myICM.dataReady()) {
+            myICM.getAGMT(); 
+            pitch_a = atan2(myICM.accY(),myICM.accZ())*180/M_PI; 
+            const float RC =  1/(2*3.1415*6);
+            const float T = 2.5/1000;
+            const float alpha = T/(T+RC) ;
+            pitch_a_LPF[n] = alpha*pitch_a + (1-alpha)*pitch_a_LPF[n-1];
+            pitch_a_LPF[n-1] = pitch_a_LPF[n];
+
+            dt = (micros()-last_time)/1000000.;
+            last_time = micros();
+            pitch_g = pitch_g + myICM.gyrX()*dt;
+            pitch = (pitch+myICM.gyrX()*dt)*0.9 + pitch_a_LPF[n]*0.1;
+            roll_a  = atan2(myICM.accX(),myICM.accZ())*180/M_PI; 
+            roll_g = roll_g + myICM.gyrY()*dt;
+            roll = (roll+myICM.gyrY()*dt)*0.9 + roll_a*0.1;
+        }
+        // store data
+        if(curr_time_imu - prev_reading > 100) {
+            time_arr[index] = (int)millis();
+            d1_arr[index] = distance1;
+            d2_arr[index] = distance2;
+            pitch_arr[index] = pitch;
+            roll_arr[index] = roll;
+            index++;
+            prev_reading = curr_time_imu;
+        }
+      }
+        // send data
+      ......
+      break;
+      </code></pre> 
       </div>
+    <br><br>
+    <img class="img-rounded" src="pics/lab4/lab4-19.png" alt="Generic placeholder image", height="700">
+    <img class="img-rounded" src="pics/lab4/lab4-20.png" alt="Generic placeholder image", height="700">
+    <img class="img-rounded" src="pics/lab4/lab4-21.png" alt="Generic placeholder image", height="400">
+    <br><br>
+    <iframe width="640" height="360" src="https://www.youtube.com/embed/UJUNZcIWYpY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <hr>
+      <h3>Cut the Coord</h3>
+      <p style="text-align: left;padding: 0px 30px;"> Two types of batteries, 3.7V 850mAh and 3.7V 650mAh are used. 3.7V 850mAh is for the motor since it requires great power, and 3.7V 650mAh is for the Artemis board and sensors/IMU. We separate the power and ground also because we need to avoid the board getting affected by the noise from the motors. I solder the cables from 650mAh battery to the JST connector and check that the JST connector is oriented correctly and red wire connect to the “+” on the board. I can still receive bluetooth data and see the blue light blinking 3 times while setup. </p>
+      <img class="img-rounded" src="pics/lab4/lab4-25.jpg" alt="Generic placeholder image", height="400">
+      <br>
+      <hr>
+      <h3>Record a stunt</h3>
+      <p style="text-align: left;padding: 0px 30px;"> I taped the board and its peripherals on the car, with a ToF sensor in the front, another at the right side, and the IMU on top of the car.</p>
+      <iframe width="640" height="360" src="https://www.youtube.com/embed/ReKGPRa-qeo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+      <br> <br>
+      <p style="text-align: left;padding: 0px 30px;"> This time, I changed the data type for plotting from string to float so the graphs look nicer. The plot and data only shows the first 5 seconds of the video, where the car moves forward, stops, and move back. From the plot, we can see the ToF patterns verifying it. Also the pitch and roll data are very close to each other, which matches our expectation.</p>
+      <img class="img-rounded" src="pics/lab4/lab4-22.png" alt="Generic placeholder image", height="400">
+      <img class="img-rounded" src="pics/lab4/lab4-23.png" alt="Generic placeholder image", height="400">
+      <img class="img-rounded" src="pics/lab4/lab4-24.png" alt="Generic placeholder image", height="350">
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/KOG8uEvKKck" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+
 
     <hr id='lab5'>
     <br>
