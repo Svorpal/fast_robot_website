@@ -634,8 +634,22 @@
     <hr id='lab5'>
     <br>
       <div style="text-align:center;">
-              <h2>Lab 5</h2>
-              <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
+              <h2>Lab 5: Motors and Open Loop Control</h2>
+              <h3>Introduction</h3>
+              <p style="text-align: left;padding: 0px 30px;"> In lab 5, we are trying to run our cars manually by using new motor drivers instead of the remote controller. After testing and installing two dual motor drivers, the Artemis Board with PWM signals and analog write functions to create a pre-programmed series of moves for the car. </p>
+              <hr>
+              <h3>Prelab</h3>
+              <p style="text-align: left;padding: 0px 30px;"> Te circuit diagram is shown below. </p>  
+              <img class="img-rounded" src="pics/lab5/lab5.png" alt="Generic placeholder image", height="550">
+              <p style="text-align: left;padding: 0px 30px;">  There are two batteries: one of 850 mAh shown in the circuit diagram is for powering up the motors, which is connected to Vin and GND pins of both motor drivers. Another of 650 mAh battery is used for powering up the Artemis board. Separate batteries provide different amount of power supplies specifically for the motors and the board, and at the same time keep the board away from the noise of motors. Each of the dual motor drivers DRV8833 can control two motors but with limited current. To get larger currents and thus more power for the motors, we assign only one motor to each driver by connecting, or shorting, BIN1&AIN1, BIN2&AIN2, BOUT1&BOUT2, AOUT1&AOUT2, as shown in the diagram. To control the motors, PWM pins on the Artemis board are used: 4 and A5 for the left motor and A15 and A16 for the right motor. The output of the motor drivers are connected to two motors in the car, respectively. 
+              </p>
+              <hr>
+              <h3>Lab Tasks</h3>
+              <h4>Power Supply Testing</h4>
+              <p style="text-align: left;padding: 0px 30px;"> I connect one motor only at first and use a constant DC power supply of 3.7 V for testing. The reason for using 3.7 V is that 3.7 Volts is the actual nominal voltage providing by the 850 mAh, if fully charged, which powers the motors. To generate PWM signals, I use the Arduino built-in analogWrite functions. Here we focus on pin 4 and A5 for a single motor In the setup, I set four PWM pins as output. In the loop function, I assign a duty cycle of 0 to both A15 and A16 pins so that they do not affect my observation of 4 and A5. Inside the loop, pin 4 is set with a duty cycle of 200 while pin A5 With a duty cycle of 0. After a short delay of 0.5 second, pin 4 is set to a duty cycle of 0 and pin A5 is set to a duty cycle of 200, and then the program delays foro 0.5 second. At this, one side of the wheels are programmed to turn forward, delay for 0.5 second, turn backward, and then delay for 0.5 second, repeatly.  </p>
+              <img class="img-rounded" src="pics/lab5/lab5-1.png" alt="Generic placeholder image", height="350">
+              <hr>
+
       </div>
 
     <hr id='lab6'>
