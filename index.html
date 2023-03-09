@@ -641,16 +641,123 @@
               <h3>Prelab</h3>
               <p style="text-align: left;padding: 0px 30px;"> Te circuit diagram is shown below. </p>  
               <img class="img-rounded" src="pics/lab5/lab5.png" alt="Generic placeholder image", height="550">
+              <h4 style="text-align:center;">Motor Contoller Circuit Diagram</h4>
+              <hr>
               <p style="text-align: left;padding: 0px 30px;">  There are two batteries: one of 850 mAh shown in the circuit diagram is for powering up the motors, which is connected to Vin and GND pins of both motor drivers. Another of 650 mAh battery is used for powering up the Artemis board. Separate batteries provide different amount of power supplies specifically for the motors and the board, and at the same time keep the board away from the noise of motors. Each of the dual motor drivers DRV8833 can control two motors but with limited current. To get larger currents and thus more power for the motors, we assign only one motor to each driver by connecting, or shorting, BIN1&AIN1, BIN2&AIN2, BOUT1&BOUT2, AOUT1&AOUT2, as shown in the diagram. To control the motors, PWM pins on the Artemis board are used: 4 and A5 for the left motor and A15 and A16 for the right motor. The output of the motor drivers are connected to two motors in the car, respectively. 
               </p>
               <hr>
               <h3>Lab Tasks</h3>
               <h4>Power Supply Testing</h4>
-              <p style="text-align: left;padding: 0px 30px;"> I connect one motor only at first and use a constant DC power supply of 3.7 V for testing. The reason for using 3.7 V is that 3.7 Volts is the actual nominal voltage providing by the 850 mAh, if fully charged, which powers the motors. To generate PWM signals, I use the Arduino built-in analogWrite functions. Here we focus on pin 4 and A5 for a single motor In the setup, I set four PWM pins as output. In the loop function, I assign a duty cycle of 0 to both A15 and A16 pins so that they do not affect my observation of 4 and A5. Inside the loop, pin 4 is set with a duty cycle of 200 while pin A5 With a duty cycle of 0. After a short delay of 0.5 second, pin 4 is set to a duty cycle of 0 and pin A5 is set to a duty cycle of 200, and then the program delays foro 0.5 second. At this, one side of the wheels are programmed to turn forward, delay for 0.5 second, turn backward, and then delay for 0.5 second, repeatly.  </p>
+              <p style="text-align: left;padding: 0px 30px;"> I connect one motor only at first and use a constant DC power supply of 3.7 V for testing. The reason for using 3.7 V is that 3.7 Volts is the actual nominal voltage providing by the 850 mAh, if fully charged, which powers the motors. To generate PWM signals, I use the Arduino built-in analogWrite functions. Here we focus on pin 4 and A5 for a single motor In the setup, I set four PWM pins as output. In the loop function, I assign a duty cycle of 0 to both A15 and A16 pins so that they do not affect my observation of 4 and A5. Inside the loop, pin 4 is set with a duty cycle of 200 while pin A5 With a duty cycle of 0. After a short delay of 0.5 second, pin 4 is set to a duty cycle of 0 and pin A5 is set to a duty cycle of 200, and then the program delays for 0.5 second. At this, one side of the wheels are programmed to turn forward, delay for 0.5 second, turn backward, and then delay for 0.5 second, repeatly.  </p>
               <img class="img-rounded" src="pics/lab5/lab5-1.png" alt="Generic placeholder image", height="350">
+              <h4 style="text-align:center;">code for motor testing using power supply</h4>
+              <img class="img-rounded" src="pics/lab5/lab5-2.jpg" alt="Generic placeholder image", height="350">
+              <h4 style="text-align:center;">constant DC Power Supply setting</h4>
+              <p style="text-align: left;padding: 0px 30px;"> The motion of the wheels met my expectation and I furthur confirm correctness using the oscilloscope.  I first connnect the oscilloscope to input pins Bin1 and GND to check if the PWM input to the motor driver is correct. From the PWM input 1 picure below, we can see the duty cycle is around 80%, which is correct because I was using a PWM value of 200 from a maximum of 255. The shape of square wave and the percentage of high and low portions are also correct. PWM input from another motor driver shown in "PWM input 2" also looks correct. The motor driver outputs are all like the one shown in "Motor output" -- clear sawtooth waves.  </p>
+              <img class="img-rounded" src="pics/lab5/lab5-3.jpg" alt="Generic placeholder image", height="350">
+              <h4 style="text-align:center;">PWM input 1</h4>
+              <img class="img-rounded" src="pics/lab5/lab5-4.jpg" alt="Generic placeholder image", height="350">  
+              <h4 style="text-align:center;">PWM input 2</h4>
+              <img class="img-rounded" src="pics/lab5/lab5-5.jpg" alt="Generic placeholder image", height="350">  
+              <h4 style="text-align:center;">Motor output</h4>
               <hr>
+              <h4>Assembly of the car</h4>
+              <p style="text-align: left;padding: 0px 30px;"> After making sure the motors are working, I put Artemis board, IMU, sensors, motor drivers, and batteries in the car. As shown in the image, the IMU is taped on top of the car, ont ToF sensor is placed on side and another is placed in the front. The Artemis board, 650 mAh battery, and two motor drivers are put in the case. The 850 mAh battery is installed in the battery case on the other side. Zip ties and gorilla tapes are used to fix every component in place. </p>
+              <img class="img-rounded" src="pics/lab5/lab5-8.png" alt="Generic placeholder image", height="550">  
+              <h4 style="text-align:center;">Car Assembly</h4>
+              <p style="text-align: left;padding: 0px 30px;"> I add more code based on the motor testing script, turning each side of wheels clockwise and counterclockwise, with delays and stopping between each set. Note that pin 4 & A5 and pin A15 & A16 are replaced by pin 6 & 7 and pin 13 & 11 because I replaced my original motor drivers with new ones. The video proved the implemenation was correct. </p>
+              <div align="left";>
+                <pre><code>
+  void loop() {
+    // top two wheels clockwise
+    analogWrite(6,200);
+    analogWrite(7,0);
+    analogWrite(11,0);
+    analogWrite(13,0);
+    delay(1000);
 
-      </div>
+    // stop 
+    analogWrite(6,0);
+    analogWrite(7,0);
+    analogWrite(11,0);
+    analogWrite(13,0);
+    delay(1000);
+
+   // top two wheels counterclockwise
+    analogWrite(6,0);
+    analogWrite(7,200);
+    analogWrite(11,0);
+    analogWrite(13,0);
+    delay(1000);
+
+    // stop 
+    analogWrite(6,0);
+    analogWrite(7,0);
+    analogWrite(11,0);
+    analogWrite(13,0);
+    delay(1000);
+
+    // bot two wheels counterclockwise
+    analogWrite(6,0);
+    analogWrite(7,0);
+    analogWrite(11,200);
+    analogWrite(13,0);
+    delay(1000);
+
+    // stop 
+    analogWrite(6,0);
+    analogWrite(7,0);
+    analogWrite(11,0);
+    analogWrite(13,0);
+    delay(1000);
+
+    // bot two wheels clockwise
+    analogWrite(6,0);
+    analogWrite(7,0);
+    analogWrite(11,0);
+    analogWrite(13,200);
+    delay(1000);
+
+    // stop 
+    analogWrite(6,0);
+    analogWrite(7,0);
+    analogWrite(11,0);
+    analogWrite(13,0);
+    delay(1000);
+}
+                </code></pre> 
+               </div>
+              <iframe width="640" height="360" src="https://www.youtube.com/embed/bSxsAh3ctf8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              <h4 style="text-align:center;">Motor Wheels Testing</h4>
+              <hr>
+              <h4>Lower limit PWM</h4>                  
+              <p style="text-align: left;padding: 0px 30px;"> In theory, PWM could range from 0 to 255 and as long as PWM is larger than 0, the motor will rotate. However, in reality, there is static friction and torque within the motors and between the wheels and the ground that the motors have to overcome. This will set a lower mimum limit of PWM value. For PWM values smaller than the lower limit, the car could not overcome the friction and torque and could not move. As soon as the PWM is larger than the lower limit, the car started the move. From my testing, 50 is the lower limit of my car. For PWM value set to 45, the car could hardly move and I could hear cracking sound if getting close to the wheels.</p>
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/5BhD5yNHoew" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<h4 style="text-align:center;">PWM lower limiting testing: 45</h4>
+
+<p style="text-align: left;padding: 0px 30px;"> At AnalogWrite PWM value is 50, the car could barely move, but if I push it a little bit, it can move forward very slowly. </p>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/5flNPWYuvWg" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<h4 style="text-align:center;">PWM lower limiting testing: 50</h4>
+
+<hr>
+<h4>Move in a straight line</h4>  
+<p style="text-align: left;padding: 0px 30px;"> To make the car go in a staright line, I start by setting both pairs of wheels to have a duty cycle of 50 and go forward. I find that the right side has more power than the left side of the wheels so I start to increase more on the left side. A duty cycle of 75 is set for the more powerful side whereas a duty cycle of 113 is set for the less powerful side to balance. </p>
+<img class="img-rounded" src="pics/lab5/lab5-7.png" alt="Generic placeholder image", height="350">  
+<h4 style="text-align:center;">Code Implemenation for straight line movement</h4>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/po1MAap0IeU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<h4 style="text-align:center;">Straight Line Testing</h4>
+<hr>
+<h3>Meng Extra</h3>  
+<h4>AnalogWrite frequency discussion</h4>   
+<img class="img-rounded" src="pics/lab5/lab5-3.jpg" alt="Generic placeholder image", height="350">
+<h4 style="text-align:center;">PWM input 1</h4>
+<p style="text-align: left;padding: 0px 30px;"> From my previous testing with PWM input into the motors, from the scope we can see the frequency is 185 Hz, which stands for the maximum frequency that the motor could be running at because our Artemis board could only produce PWM signal this fast. From lab 5 experiments with motors, as well lab 3 and lab 4 experiments with IMUs and ToF sensors, we could tell this rate is enough for our current setting because all these componnets can not run faster than 185 Hz from our previous testing. Manually configuring the timers to generate a faster PWM signal could possibly allow the car to perform more actions wthin a certain amount of time than a slower PWM singal. If we want our robot to have rapid and precise movements within a very short amount of time, we should manually configuring the timers to generate a faster PWM signal.</p>
+<hr>
+<h4> Lowest PWM value speed (once in motion) discussion </h4>   
+<p style="text-align: left;padding: 0px 30px;"> As discussed above, the lower PWM limit for my car is 50. To keep my car running at slowest speed, I need a PWM value of 60 for the more powerful wheels and that of 75 for the more powerful wheel side. The car was moving very slowly with minimum speed but non-stopping. This PWM varies as the 850 mAh battery ran out of its power. Therefore, I got different results from keep testing and I would say 60 and 75 are for running with 3.7 V batteries only.</p>
+
+</div>
 
     <hr id='lab6'>
     <br>
