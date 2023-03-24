@@ -785,7 +785,267 @@
       <h3>Introduction</h3>
       <p style="text-align: left;padding: 0px 30px;">In this lab, we would like to implement and explore PID (Proportional-Integration-Derivative) closed-loop controller on our robotic car. To do so, we first set up bluetooth connection between the Arm side and the car so that we can further adjust pid parameters based on the sensor feedbacks sent to the Arm side. Second, we design and implement a PID controller in a closed feedback loop, analyze sensor data sent from the car to the arm and find the optimal PID parameters for the Task A I choose. </p>
       <h3>Prelab</h3>
+      <h4> Send and receive data from bluetooth </h4>
+      <p style="text-align: left;padding: 0px 30px;"> Since I am doing Task A, I need primarily data from the front sensor -- ToF 1 in my design. I reused my code from lab 4 fm with a few adaptataions for sending ToF and IMU data over 5 seconds. As shown in the code snippets below, the ble arduino script has a command type GET_TOF_IMU, and when the Artemis side reads that command type, it will go through the following steps. <br> 
+      (1) create local arrays for sensor readings storage, as well as indexes and time variables <br> 
+      (2) Within a framework of 10 seconds, keep reading from the ToF1 sensor whenever it is ready, calculate the error term for each reading, compute corresponding PID controlled output, and drive the motor with formulas based on the PID output. In this stage, reading is continously read from the sensors but only get stored in the local arrays every 100 ms to ensure accuracy and avoid overflow. <br> 
+      (3) After 10 seconds, stop the motor, and send data from the local arrays to the PC via bluetooth. <br>
+      To ensure the PID works smoothly with fast sampling, I would like the Artemis board to spend most of its resources for PID calculation and motor controlling. More specifically, I removed the get ready conditional checks for ToF sensor 2 and IMU, read data continously while only store them in the local arrays every 100 ms, and only send the data via bluetooth after the 10 seconds of operation.<br>
+      On the python side, global arrays store the data from different sensors sent via bluetooth. The notification handler is from lab4, continously detecting new data sent by bluetooth, spliting the input string by the "|" marks, and storing them into corresponding global arrays. To furthur plot and verify corretness of PID, data in the arrays are converted to floats and plotted. 
+
+<br>
+<br>
+      <div align="left";>
+              <h5>Ble_arduino script</h5>
+              <pre><code>
+enum CommandTypes
+{
+  ...
+  GET_TOF_IMU
+};
+
+void handle_command()
+{
+  ...
+  switch (cmd_type) {
+    ...
+    case GET_TOF_IMU: 
+    // local arrays for data storage
+      int time_arr[150];
+      int d1_arr[150];
+      ... 
+      int pwm_arr[150];
+    // distance1 is local cache for ToF1 readings
+      int distance1;
+    // initialized to 1000 to avoid car going backwards for the first reading/error
+      distance1 = 1000;
+      ... 
+    // index for local arrays
+      int index;
+      index = 0;
+    // timing for reading
+      float start_reading;
+      start_reading = millis();
+      float prev_reading;
+      prev_reading = millis();
+      float curr_time_imu;
+      curr_time_imu = millis();
+
+      // Read data from the car for at most 10 seconds
+      while(curr_time_imu - start_reading <= 10000) {
+        curr_time_imu = millis();
+        distanceSensor1.startRanging(); // Write configuration bytes to initiate measurement
+        if(distanceSensor1.checkForDataReady()) {
+            distance1 = distanceSensor1.getDistance(); //Get the result of the measurement from the sensor
+            distanceSensor1.clearInterrupt();
+            distanceSensor1.stopRanging();
+        } 
+
+        int error = distance1 - Setpoint;
+
+        // PID calculation 
+        // calculate P term
+        double P_term = KP * error;
+        // calculate I term
+        if ( (abs(I_sum) <= I_max) || (I_sum > I_max && error <= 0) || (I_sum < -1*I_max && error >= 0)){
+          I_sum += error; 
+        }
+        double I_term = KI * I_sum;
+        double PID = P_term + I_term;
+
+
+        // Motor control by PID output, 5 is for buffer
+        if(error > 5) {
+          motor_forward((int)PID);
+        } else if (error < -5) {
+          motor_backward((int)PID);
+        } else {
+          motor_stop();
+        }
+
+        // Read sensor data every 100 ms, store in local arrays
+        if(curr_time_imu - prev_reading > 100) {
+            time_arr[index] = (int)millis();
+            d1_arr[index] = distance1;
+            d2_arr[index] = distance2;
+            pitch_arr[index] = pitch;
+            roll_arr[index] = roll;
+            pwm_arr[index] = (int)PID;
+            index++;
+            prev_reading = curr_time_imu;
+        }
+      } 
+
+      // car stops, data collected 
+      motor_stop();
+
+
+      // send data from local arrays to bluttooth characteristic string
+        for(int i = 0; i != index; i++){
+            // Serial.print(i)
+            tx_estring_value.clear();
+            tx_estring_value.append("T:");  
+            tx_estring_value.append(time_arr[i]);
+            tx_estring_value.append("|D1:");
+            tx_estring_value.append(d1_arr[i]);
+            tx_estring_value.append("|D2:");
+            tx_estring_value.append(d2_arr[i]);
+            tx_estring_value.append("|P:");
+            tx_estring_value.append(pitch_arr[i]);
+            // remove roll data beacuse otherwise exceeding 151 size limit of estring
+            // tx_estring_value.append("|R:");
+            // tx_estring_value.append(roll_arr[i]);
+            tx_estring_value.append("|M:");
+            tx_estring_value.append(pwm_arr[i]);
+            tx_estring_value.append("|");
+            tx_characteristic_string.writeValue(tx_estring_value.c_str());
+            delay(10);
+        }
+      break;
+      ...
+  }
+  ...
+}
+... 
+              </code></pre>
+      </div>
+<br>
+<br>
+      <div align="left";>  
+              <h5>Ble_Python Script</h5>
+              <pre><code>
+# Get ArtemisBLEController object
+ble = get_ble_controller()
+    
+# Connect to the Artemis Device
+ble.connect()
+
+
+# global arrays for storage bluetooth transmitted data 
+tof_imu_data = []
+time = []
+distance1 = []
+distance2 = []
+pitch = []
+roll = []
+pwm = []
+
+# notification handler 
+def tof_imu_handler(uuid, byteArray):
+    s = ble.bytearray_to_string(byteArray)
+    tof_imu_data.append(s)
+    arr = s.split("|")[0:-1]
+    for i in range(0, len(arr)):
+        if i % 5 == 0:
+            time.append(arr[i][2:])
+        elif i % 5 == 1 :
+            distance1.append(arr[i][3:])
+        elif i % 5 == 2 :
+            distance2.append(arr[i][3:])
+        elif i % 5 == 3 :
+            pitch.append(arr[i][2:])
+        elif i % 5 == 4 :
+            pwm.append(arr[i][2:])
+ble.start_notify(ble.uuid['RX_STRING'], tof_imu_handler)
+
+ble.send_command(CMD.GET_TOF_IMU, "")
+
+
+# convert data to correct format for plotting 
+time = [float(i) for i in time]
+distance1 = [float(i) for i in distance1]
+distance2 = [float(i) for i in distance2]
+pitch = [float(i) for i in pitch]
+roll = [float(i) for i in roll]
+pwm = [float(i) for i in pwm]
+
+# plot ToF 1 distance vs time 
+plt.plot(time,distance1, label="TOF 1")
+plt.legend(loc='upper right')
+plt.xlabel("time(ms)")
+plt.ylabel("Distance(mm)")
+
+# plot PWM(PID) values vs time 
+plt.plot(time,pwm, label="PID")
+plt.legend(loc='upper right')
+plt.xlabel("time(ms)")
+plt.ylabel("PWM")
+              </code></pre>
+      </div>
+
+
       <h3>Lab Tasks</h3>
+      <h4>Design of the PID loop</h4>
+        <p style="text-align: left;padding: 0px 30px;"> To complete Task A, I need to drive the car until it stops exactly 1ft (304 mm) before a wall. I first only used Proportional control P, and later added derivative control       </p>
+      <br>
+      <br>
+      <div align="left";>  
+              <h5>Motor Control with PID</h5>
+                      <pre><code>
+// PID parameters
+int Setpoint = 304;
+double KP  = 0.175;
+double KI = 0.02;
+double I_sum = 0;
+double I_max = 1000;
+
+int limit_range(int speed_val) {
+  if (speed_val >= 255) {
+    return 255;
+  } else if (speed_val <= 100) {
+    return 100;
+  } else {
+    return speed_val;
+  }
+}
+void motor_forward(int PWM) {
+  // Serial.print("Forward");
+  // Serial.println(PWM);
+  analogWrite(6,0);
+  analogWrite(7,PWM);
+  analogWrite(13,0);
+  analogWrite(11,PWM+15);
+}
+
+void motor_backward(int PWM) {
+  PWM = (-1)*PWM;
+  // Serial.print("Backward");
+  // Serial.println(PWM);
+  analogWrite(6,PWM);
+  analogWrite(7,0);
+  analogWrite(13,PWM+15);
+  analogWrite(11,0);
+}
+
+void motor_stop() {
+  // Serial.println("Stop");
+  analogWrite(6,0);
+  analogWrite(7,0);
+  analogWrite(13,0);
+  analogWrite(11,0);
+}
+
+distance1 = distanceSensor1.getDistance()
+int error = distance1 - Setpoint;
+// p
+double P_term = KP * error;
+if ( (abs(I_sum) <= I_max) || (I_sum > I_max && error <= 0) || (I_sum < -1*I_max && error >= 0)){
+  I_sum += error; 
+}
+double I_term = KI * I_sum;
+double PID = P_term + I_term;
+if(error > 5) {
+  motor_forward((int)PID);
+} else if (error < -5) {
+  motor_backward((int)PID);
+} else {
+  motor_stop();
+}
+
+                      </code></pre>
+      </div>
+      <h4>Testing of the PID loop</h4>
+
     </div>
 
     <hr id='lab7'>
