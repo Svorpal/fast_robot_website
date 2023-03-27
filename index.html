@@ -791,7 +791,8 @@
       (2) Within a framework of 10 seconds, keep reading from the ToF1 sensor whenever it is ready, calculate the error term for each reading, compute corresponding PID controlled output, and drive the motor with formulas based on the PID output. In this stage, reading is continously read from the sensors but only get stored in the local arrays every 100 ms to ensure accuracy and avoid overflow. <br> 
       (3) After 10 seconds, stop the motor, and send data from the local arrays to the PC via bluetooth. <br>
       To ensure the PID works smoothly with fast sampling, I would like the Artemis board to spend most of its resources for PID calculation and motor controlling. More specifically, I removed the get ready conditional checks for ToF sensor 2 and IMU, read data continously while only store them in the local arrays every 100 ms, and only send the data via bluetooth after the 10 seconds of operation.<br>
-      On the python side, global arrays store the data from different sensors sent via bluetooth. The notification handler is from lab4, continously detecting new data sent by bluetooth, spliting the input string by the "|" marks, and storing them into corresponding global arrays. To furthur plot and verify corretness of PID, data in the arrays are converted to floats and plotted. 
+      On the python side, global arrays store the data from different sensors sent via bluetooth. The notification handler is from lab4, continously detecting new data sent by bluetooth, spliting the input string by the "|" marks, and storing them into corresponding global arrays. To furthur plot and verify corretness of PID, data in the arrays are converted to floats and plotted. <br>
+      The sampling time is 100ms which is fast enough for Task A. 
 
 <br>
 <br>
@@ -973,10 +974,15 @@ plt.ylabel("PWM")
               </code></pre>
       </div>
 
-
       <h3>Lab Tasks</h3>
       <h4>Design of the PID loop</h4>
-        <p style="text-align: left;padding: 0px 30px;"> To complete Task A, I need to drive the car until it stops exactly 1ft (304 mm) before a wall. I first only used Proportional control P, and later added derivative control       </p>
+        <p style="text-align: left;padding: 0px 30px;"> To complete Task A, I need to drive the car until it stops exactly 1ft (304 mm) before a wall. I first only used Proportional control P, and later added derivative control D. There are two Heuristic methods mentioned in the PID lecture 2, I used the second Heuristic shown in the iamge below. I first set KP and KD to 0s, increment Kp until it oscillates. Second, I decrease KP until the car overshoots a bit, not hitting the wall and goes back to 304 mm position from the wall. Third, I add KI, change its value until the car can smoothly stops at the 304 mm position. Since PI controller can effectively works for Task A, I did not add an additional derivative control. 
+        </p>
+         <br>
+      <img class="img-rounded" src="pics/lab6/he2.png" alt="Generic placeholder image", height="150">   
+      <br>
+       <br>    
+      <p style="text-align: left;padding: 0px 30px;"> The code snippet below shows the final implementation of PID controller with final KP and KI values. I got inspiration from Anya Prabowo's and Ryan Chan's websites. Distance1 is the sensor reading of the ToF sensor in the front of the car.  For testing purposes, I created a limit_range function to set maximum and minimum allowed PWM values for the speed, but I found out later which was not needed for this task because my car was not running super fast and was about to stop when PID controller entered a PWM value within the dead band.  The motor forward and motor backward functions are used. Motor forward sets the wheels to move forward with the PID controller output as PWM values. Motor backward reverses the negative computed PID values and use them as PWM motor values for moving backwards. For every sensor reading   </p>
       <br>
       <br>
       <div align="left";>  
@@ -985,7 +991,7 @@ plt.ylabel("PWM")
 // PID parameters
 int Setpoint = 304;
 double KP  = 0.175;
-double KI = 0.02;
+double KI = 0.025;
 double I_sum = 0;
 double I_max = 1000;
 
@@ -1026,6 +1032,8 @@ void motor_stop() {
 }
 
 distance1 = distanceSensor1.getDistance()
+
+// PID controller calculation 
 int error = distance1 - Setpoint;
 // p
 double P_term = KP * error;
@@ -1034,6 +1042,9 @@ if ( (abs(I_sum) <= I_max) || (I_sum > I_max && error <= 0) || (I_sum < -1*I_max
 }
 double I_term = KI * I_sum;
 double PID = P_term + I_term;
+
+
+// PID controller driving the motors, 5 is a buffer zone 
 if(error > 5) {
   motor_forward((int)PID);
 } else if (error < -5) {
