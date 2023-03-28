@@ -794,6 +794,7 @@
       On the python side, global arrays store the data from different sensors sent via bluetooth. The notification handler is from lab4, continously detecting new data sent by bluetooth, spliting the input string by the "|" marks, and storing them into corresponding global arrays. To furthur plot and verify corretness of PID, data in the arrays are converted to floats and plotted. <br>
       The sampling time is 100ms which is fast enough for Task A. 
 
+
 <br>
 <br>
       <div align="left";>
@@ -982,7 +983,7 @@ plt.ylabel("PWM")
       <img class="img-rounded" src="pics/lab6/he2.png" alt="Generic placeholder image", height="150">   
       <br>
        <br>    
-      <p style="text-align: left;padding: 0px 30px;"> The code snippet below shows the final implementation of PID controller with final KP and KI values. I got inspiration from Anya Prabowo's and Ryan Chan's websites. Distance1 is the sensor reading of the ToF sensor in the front of the car.  For testing purposes, I created a limit_range function to set maximum and minimum allowed PWM values for the speed, but I found out later which was not needed for this task because my car was not running super fast and was about to stop when PID controller entered a PWM value within the dead band.  The motor forward and motor backward functions are used. Motor forward sets the wheels to move forward with the PID controller output as PWM values. Motor backward reverses the negative computed PID values and use them as PWM motor values for moving backwards. For every sensor reading   </p>
+      <p style="text-align: left;padding: 0px 30px;"> The code snippet below shows the final implementation of PID controller with final KP and KI values. I got inspiration from Anya Prabowo's and Ryan Chan's websites. Distance1 is the sensor reading of the ToF sensor in the front of the car.  For testing purposes, I created a limit_range function to set maximum and minimum allowed PWM values for the speed, but I found out later which was not needed for this task because my car was not running super fast (with a maximum PWM value smaller than 160) and was about to stop when PID controller entered a PWM value within the dead band (with a PWM value below 30).  The motor forward and motor backward functions are used. Motor forward sets the wheels to move forward with the PID controller output as PWM values. Motor backward reverses the negative computed PID values and use them as PWM motor values for moving backwards. For every sensor reading from the front TOF1 sensor, distance is getting updated by it. And then I compute the error for our conttroller by taking the difference between the error and the setpoint, which is set to be 304. The PID controller calculate the new PWM signal, and if the error is positive, meaning the car is till further away from the setpoint of 1 feet, we drive the motors forward using the PID controller output. On ther other hand, if the error is negative, meaning the car passes the 1 feet booundary, we need to driver the motors backward using the PID controller output away from the wall.   </p>
       <br>
       <br>
       <div align="left";>  
@@ -1035,12 +1036,17 @@ distance1 = distanceSensor1.getDistance()
 
 // PID controller calculation 
 int error = distance1 - Setpoint;
-// p
+
+// p control 
 double P_term = KP * error;
+
+// I control
 if ( (abs(I_sum) <= I_max) || (I_sum > I_max && error <= 0) || (I_sum < -1*I_max && error >= 0)){
   I_sum += error; 
 }
 double I_term = KI * I_sum;
+
+// PID control 
 double PID = P_term + I_term;
 
 
@@ -1056,7 +1062,93 @@ if(error > 5) {
                       </code></pre>
       </div>
       <h4>Testing of the PID loop</h4>
+      <p style="text-align: left;padding: 0px 30px;"> Following Heuristic 2, I start by setting Kp and Ki to 0s, and tune Kp until oscillation, and then decrease by factor 2-4. I start from increasing Kp and until kP = 0.25 and Ki = 0, I was able to see oscillations. From the videos and plots for three different trials, we can see the car passes the 304mm mark, hits the wall, and goes back but stops between 200mm and 300mm from the wall. </p>
+    <br>
+    <img class="img-rounded" src="pics/lab6/i0/p_0.25_i_0.1.png" alt="Generic placeholder image", height="350">  
+    <img class="img-rounded" src="pics/lab6/i0/p_0.25_i_0.05.png" alt="Generic placeholder image", height="350">  
+    <img class="img-rounded" src="pics/lab6/i0/p_0.25_i_0.png" alt="Generic placeholder image", height="350">  
+    <br>
 
+    <iframe width="640" height="360" src="https://www.youtube.com/embed/iTqkRofAS88" title="YouTube video player" frameborder="0"
+     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+     <h5>Kp = 0.25, Ki = 0</h5>
+     <br>
+
+     <p style="text-align: left;padding: 0px 30px;"> And then I halved the KP value to be 0.125, and found out it was hard for my car to even reach the 300mm boundary. </p>
+     <br>
+    <img class="img-rounded" src="pics/lab6/i0/p_0.125_i_0.png" alt="Generic placeholder image", height="350">  
+    <img class="img-rounded" src="pics/lab6/lab6_2.png" alt="Generic placeholder image", height="350">  
+    <br>
+    <iframe width="640" height="360" src="https://www.youtube.com/embed/fmusvqTd-cE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+     <h5>Kp = 0.125, Ki = 0</h5>
+     <br>   
+
+
+    <hr>
+
+     <p style="text-align: left;padding: 0px 30px;"> It is okay for my car to pass the 300mm boundary, but It would be bad for the car to hit the wall. On the other hand, stopping before the 300mm mark does not satisfy the requirement. Therefore, we need to set KP between 0.125 and 0.25 and introduce KI. After more than 20 attempts, I found that a KP value between 0.175 and 0.18 works well. As shown in the plots and video below, the car goes beyond the 300mm mark but stops and goes back before hitting the wall. Notice that it stopped at around 200mm instead of the 300mm mark at the end, so that is why we need to further add integral control part to the PID controller. </p>
+
+     <br>
+    <img class="img-rounded" src="pics/lab6/i0/p_0.175_i_0.1.png" alt="Generic placeholder image", height="350">  
+    <br>
+    <iframe width="640" height="360" src="https://www.youtube.com/embed/JuhLyuIp1Jo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <h5>Kp = 0.175, Ki = 0</h5>
+    <br>  
+
+    <hr>
+
+    <p style="text-align: left;padding: 0px 30px;"> To introduce integral control, I learned from my TA Ryan Chan, adding an additional Imax to handle integral windup so that we can avoid the situation where the car building up too much momentum because of starting from very far away from the wall and thereby crashing into the wall. Following Heuristic #2, I need to increase ki until the system losses stability and then decreases Ki to find the best condition. The first value I tried was 0.05 for KI, which turned out to be too large and the car had great oscillation around the 304 mm mark.  </p>
+
+    <br>
+    <img class="img-rounded" src="pics/lab6/0.175_0.05.png" alt="Generic placeholder image", height="350">  
+    <br>
+    <iframe width="640" height="360" src="https://www.youtube.com/embed/ZiX0Ry4zgWU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <h5>Kp = 0.175, Ki = 0.05</h5>
+    <br>  
+
+    <hr>
+
+    <p style="text-align: left;padding: 0px 30px;"> Hence, I gradually decrease Ki until I find one that stablizes the system around the 304 mm mark. The final Kp and Ki value I got was KP = 0.175 and 0.025. With these Kp and Ki values, the car still went beyond the mark, but was able to get back and settled down at the mark without oscillations. I tested many trials at different locations, some of them have both plots and video recordings while the others only have plots. The results shown below verify that the PID controller was working successfully. </p>
+
+    <br>
+    <img class="img-rounded" src="pics/lab6/0.175_0.02_distance.png" alt="Generic placeholder image", height="350">  
+    <img class="img-rounded" src="pics/lab6/0.175_0.02_pwm.png" alt="Generic placeholder image", height="350"> 
+    <img class="img-rounded" src="pics/lab6/0.175_0.02_print.png" alt="Generic placeholder image", height="250"> 
+    <br>
+    <iframe width="640" height="360" src="https://www.youtube.com/embed/JAsKLWTZLko" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <h5>Kp = 0.175, Ki = 0.02, Trial 1</h5>
+    <br>  
+
+    <hr>
+
+    <br>
+    <img class="img-rounded" src="pics/lab6/0.175_0.025.png" alt="Generic placeholder image", height="350">  
+    <img class="img-rounded" src="pics/lab6/0.175_0.025_2.png" alt="Generic placeholder image", height="350"> 
+    <img class="img-rounded" src="pics/lab6/0.175_0.025_2_pwm.png" alt="Generic placeholder image", height="350"> 
+    <img class="img-rounded" src="pics/lab6/0.175_0.025_dis.png" alt="Generic placeholder image", height="150"> 
+    <img class="img-rounded" src="pics/lab6/0.175_0.025_2_pid.png" alt="Generic placeholder image", height="250"> 
+    <br>
+    <iframe width="640" height="360" src="https://www.youtube.com/embed/jDJBpYwjY1E" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <h5>Kp = 0.175, Ki = 0.025, Trial 2 and Trial 3</h5>
+    <br>  
+
+    <hr>
+    <br>
+    <img class="img-rounded" src="pics/lab6/final/pid1.png" alt="Generic placeholder image", height="350">  
+    <img class="img-rounded" src="pics/lab6/final/pwm1.png" alt="Generic placeholder image", height="350">  
+    <img class="img-rounded" src="pics/lab6/final/output1.png" alt="Generic placeholder image", height="250">  
+
+    <img class="img-rounded" src="pics/lab6/final/pid2.png" alt="Generic placeholder image", height="350">  
+    <img class="img-rounded" src="pics/lab6/final/pwm2.png" alt="Generic placeholder image", height="350">  
+    <img class="img-rounded" src="pics/lab6/final/output2.png" alt="Generic placeholder image", height="250"> 
+    <br>
+    <iframe width="640" height="360" src="https://www.youtube.com/embed/Gh70m4QrimE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <h5>Kp = 0.175, Ki = 0.025, Trial 4 and Trial 5</h5>
+    <br>
+
+    <hr>
+    <h4>Meng Task: Wind up implementation</h4>
+    <p style="text-align: left;padding: 0px 30px;"> The windup implementation is discuessed above in the Ki design part.</p>
     </div>
 
     <hr id='lab7'>
