@@ -1156,8 +1156,120 @@ if(error > 5) {
     <br>
     <br>
       <div style="text-align:center;">
-              <h2>Lab 7</h2>
-              <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
+              <h2>Lab 7: Kalman Filter</h2>
+              <h3> Introduction</h3>
+              <p style="text-align: left;padding: 0px 30px;"> In this lab, we are improving the behavior in lab 6 by accerating it using a Kalman Filter. More specifcially, the Kalman Filter can compensate our slow sampling rate and let our car run as fast as possible while still completing the same designated task.</p>
+              <hr>
+              <h3> Lab Tasks </h3>
+              <h4> 1. Estimate Drag and Momentum</h4>
+              <p style="text-align: left;padding: 0px 30px;"> I did not specify a PWM value nor a step size for lab 6, so I picked the maximum PWM value produced from the last run in Lab6 : PID controller, which was 83 out of 255. I used to store read data every 100ms even though I continously read from the sensor when it was ready and used that reading to compute PID. For now, I remove the 100ms limit and record every data point from cotinous reading to get fast sampling. Moreover, to get a smooth curve instead of stepwise curve for distance (which could result in a speed of 0 after calculation) as in lab 6, I store data in local arrays whenever ToF sensor 1 is ready. In the code shown below, I drive the car with the maximum PWM value of 83 for 2.5 seconds to ensure constant speed has been reached, and actively brake it using a PWM value of -83 for 0.5 second to ensure it does not crash into the wall, and then make it stop.  </p>
+      <br>
+      <br>
+      <div align="left";>  
+              <h5>Arudino script</h5>
+                      <pre><code>
+case LAB_7:
+    // local array storing sensor data 
+    int distance1;
+    distance1 = 1000;
+    int index;
+    index = 0;
+
+    // timestamps
+    float start_reading;
+    start_reading = millis();
+    float curr_time_imu;
+    curr_time_imu = millis();
+
+    // PWM temp cache
+    int PWM_temp;
+    PWM_temp = 0;
+
+
+    distanceSensor1.startRanging();
+    // record data for 7 seconds 
+    while(curr_time_imu - start_reading <= 7000) {
+      curr_time_imu = millis();
+      if(distanceSensor1.checkForDataReady()) {
+          distance1 = distanceSensor1.getDistance(); //Get the result of the measurement from the sensor
+
+          time_arr[index] = (int)millis();
+          d1_arr[index] = distance1;
+          distanceSensor1.clearInterrupt();
+          distanceSensor1.stopRanging();
+          distanceSensor1.startRanging();
+
+          // forward with PWM = 83 for 2.5 seconds
+          if(curr_time_imu - start_reading < 2500) {
+            PWM_temp = 83;
+            motor_forward(PWM_temp);
+          // backward with PWM = 83 for 0.5 seconds for braking
+          } else if (curr_time_imu - start_reading < 3000) {
+            PWM_temp = -83;
+            motor_backward(PWM_temp*(-1));
+          // stop after 3 seconds
+          } else {
+            motor_stop();
+            PWM_temp = 0;
+          } 
+          pwm_arr[index] = PWM_temp;
+          index++;
+    } 
+
+    } // car stops, data collected 
+    motor_stop();
+    // send data
+      for(int i = 0; i != index; i++){
+          // Serial.print(i)
+          tx_estring_value.clear();
+          tx_estring_value.append("T:");  
+          tx_estring_value.append(time_arr[i]);
+          tx_estring_value.append("|D1:");
+          tx_estring_value.append(d1_arr[i]);
+          tx_estring_value.append("|M:");
+          tx_estring_value.append(pwm_arr[i]);
+          tx_estring_value.append("|");
+          tx_characteristic_string.writeValue(tx_estring_value.c_str());
+      }
+
+                      </code></pre>
+      </div>
+
+  <img class="img-rounded" src="pics/lab7/lab7_1.png" alt="Generic placeholder image", height="350">  
+  <img class="img-rounded" src="pics/lab7/lab7_2.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab7/lab7_3.png" alt="Generic placeholder image", height="350"> 
+  <br>
+  <br>
+  <p style="text-align: left;padding: 0px 30px;"> To compute Matrices A and B for the Kalman filter, we use the formulas from lecture notes. I find the maximum speed (converted from mm/ms to mm/s in unit) by finding the maximum number in the speed list recorded. To find the 90% rising time, we find the starting time and the time after the speed exceeds 90% of the maximum speed and compute their differences. To find drag d, I let u = 1 as discussed in lecture, and divide one by the maximum (constant) speed. </p>
+  <img class="img-rounded" src="pics/lab7/lab7_5.png" alt="Generic placeholder image", height="150">  
+  <br>
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_6.png" alt="Generic placeholder image", height="250">
+  <br>
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_4.png" alt="Generic placeholder image", height="350"> 
+  <br>
+  
+  
+
+  <h4> 2. Initialize KF</h4>
+  <p style="text-align: left;padding: 0px 30px;"> Following above,I calculate -d/m term for matrix A, 1/m term for matrix B, and create matrix A,B,C for implemeting the Kalman Filter.</p>
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_8.png" alt="Generic placeholder image", height="350"> 
+  <br>
+  <p style="text-align: left;padding: 0px 30px;"> Furthermore, I add noise control, setting the inital conidions, discretize A,B,C matrices, and define the Kalman Filter according to the instructions and lecture notes. For the noise estimation, I decide to use 100 for sigma measurement for now for both sigma 1 and sigma2. I measure sigma 3 based on delta time. To set the inital states, I set x in the same way as suggested by instruction, and sigma with sigma values shown in the lecture slides. After running the Kalman filter, we can see that the Kalman Filter esitmation curve is closely fitting the measured sensor distance data. </p>
+
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_9.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_10.png" alt="Generic placeholder image", height="850"> 
+  <br>
+
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_11.png" alt="Generic placeholder image", height="550"> 
+  <br>
       </div>
 
     <hr id='lab8'>
