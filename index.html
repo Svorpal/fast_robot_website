@@ -1162,7 +1162,7 @@ if(error > 5) {
               <hr>
               <h3> Lab Tasks </h3>
               <h4> 1. Estimate Drag and Momentum</h4>
-              <p style="text-align: left;padding: 0px 30px;"> I did not specify a PWM value nor a step size for lab 6, so I picked the maximum PWM value produced from the last run in Lab6 : PID controller, which was 83 out of 255. I used to store read data every 100ms even though I continously read from the sensor when it was ready and used that reading to compute PID. For now, I remove the 100ms limit and record every data point from cotinous reading to get fast sampling. Moreover, to get a smooth curve instead of stepwise curve for distance (which could result in a speed of 0 after calculation) as in lab 6, I store data in local arrays whenever ToF sensor 1 is ready. In the code shown below, I drive the car with the maximum PWM value of 83 for 2.5 seconds to ensure constant speed has been reached, and actively brake it using a PWM value of -83 for 0.5 second to ensure it does not crash into the wall, and then make it stop.  </p>
+              <p style="text-align: left;padding: 0px 30px;"> I did not specify a PWM value nor a step size for lab 6, so I picked the maximum PWM value produced from the last run in Lab6 : PID controller, which was 83 out of 255. I used to store read data every 100ms even though I continously read from the sensor when it was ready and used that reading to compute PID. For now, I remove the 100ms limit and record every data point from cotinous reading to get fast sampling. Moreover, to get a smooth curve instead of stepwise curve for distance (which could result in a speed of 0 after calculation) as in lab 6, I store data in local arrays whenever ToF sensor 1 is ready. In the code shown below, I drive the car with the maximum PWM value of 83 for 3 seconds to ensure constant speed has been reached, and stop it by setting PWM values to 0s. I did not use an active braking because there is enough distance between my car's starting position and the wall so that it never crashes into the wall.  </p>
       <br>
       <br>
       <div align="left";>  
@@ -1200,15 +1200,13 @@ case LAB_7:
           distanceSensor1.startRanging();
 
           // forward with PWM = 83 for 2.5 seconds
-          if(curr_time_imu - start_reading < 2500) {
+          if(curr_time_imu - start_reading < 3000) {
             PWM_temp = 83;
             motor_forward(PWM_temp);
-          // backward with PWM = 83 for 0.5 seconds for braking
-          } else if (curr_time_imu - start_reading < 3000) {
-            PWM_temp = -83;
-            motor_backward(PWM_temp*(-1));
+          // backward with PWM = 83 for 0.5 seconds for braking2300
+          } 
           // stop after 3 seconds
-          } else {
+          else {
             motor_stop();
             PWM_temp = 0;
           } 
@@ -1240,7 +1238,7 @@ case LAB_7:
   <img class="img-rounded" src="pics/lab7/lab7_3.png" alt="Generic placeholder image", height="350"> 
   <br>
   <br>
-  <p style="text-align: left;padding: 0px 30px;"> To compute Matrices A and B for the Kalman filter, we use the formulas from lecture notes. I find the maximum speed (converted from mm/ms to mm/s in unit) by finding the maximum number in the speed list recorded. To find the 90% rising time, we find the starting time and the time after the speed exceeds 90% of the maximum speed and compute their differences. To find drag d, I let u = 1 as discussed in lecture, and divide one by the maximum (constant) speed. </p>
+  <p style="text-align: left;padding: 0px 30px;"> To compute Matrices A and B for the Kalman filter, we use the formulas from lecture notes. I find the maximum speed (converted from mm/ms to mm/s in unit) by finding the maximum number in the speed list recorded. To find the 90% rising time, we find the starting time and the time after the speed exceeds 90% of the maximum speed and compute their differences. To find drag d, I let u = 1 as discussed in lecture, and divide one over the maximum (constant) speed. </p>
   <img class="img-rounded" src="pics/lab7/lab7_5.png" alt="Generic placeholder image", height="150">  
   <br>
   <br>
@@ -1257,20 +1255,72 @@ case LAB_7:
   <br>
   <img class="img-rounded" src="pics/lab7/lab7_8.png" alt="Generic placeholder image", height="350"> 
   <br>
-  <p style="text-align: left;padding: 0px 30px;"> Furthermore, I add noise control, setting the inital conidions, discretize A,B,C matrices, and define the Kalman Filter according to the instructions and lecture notes. For the noise estimation, I decide to use 100 for sigma measurement for now for both sigma 1 and sigma2. I measure sigma 3 based on delta time. To set the inital states, I set x in the same way as suggested by instruction, and sigma with sigma values shown in the lecture slides. After running the Kalman filter, we can see that the Kalman Filter esitmation curve is closely fitting the measured sensor distance data. </p>
+  <br>
+  <br>
+  <p style="text-align: left;padding: 0px 30px;"> Furthermore, I discretize A,B,C matrices, and define the Kalman Filter according to the instructions and lecture notes. <br> <br>
+
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_12.png" alt="Generic placeholder image", height="325"> 
+  <br>
+  <br>
+  For the initial conidtions, x matrix has initial positions set to be the first ToF measured distance data and the starting speed set to 0. On the other hand, sig matrix which sets initial state uncertainties has sigma equals 5, meaning the initial standard deviation for distance and speed are set to 5. <br> <br>
+
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_10.png" alt="Generic placeholder image", height="125"> 
+  <br>
+  <br>
+
+  For the noise estimation, there is process noise and sensor measurement noise so we need three sigmas: sigma 1 and sigma 2 to put in the matrix of process noise and sigma 3 to put in the matrix of sensor noise.  In my code, I use sig_measure for sigma 1 and sigma 2, and sig_proc for sigma 3. <br> <br> </p>
 
   <br>
   <img class="img-rounded" src="pics/lab7/lab7_9.png" alt="Generic placeholder image", height="350"> 
   <br>
-
-  <br>
-  <img class="img-rounded" src="pics/lab7/lab7_10.png" alt="Generic placeholder image", height="850"> 
   <br>
 
+  <p style="text-align: left;padding: 0px 30px;"> To calculate process noise, I decide to use 100 for sigma measurement at first for both sigma 1 and sigma2, and 20 for sigma3. In this case, the uncertainty for the model is big and we rely more on the sensor measurements than the model. After running the Kalman filter, we can see that the Kalman Filter esitmation curve is closely fitting the measured sensor distance data. </p>
+
   <br>
-  <img class="img-rounded" src="pics/lab7/lab7_11.png" alt="Generic placeholder image", height="550"> 
+  <img class="img-rounded" src="pics/lab7/lab7_13.png" alt="Generic placeholder image", height="450"> 
   <br>
-      </div>
+
+
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_11.png" alt="Generic placeholder image", height="450"> 
+  <br>
+
+  <p style="text-align: left;padding: 0px 30px;"> For sigma 1 and sigma 2 equals 10 whereas sigma 3 equals 200, we reply now more on our model than the ToF sensor measurements. As we can see below, there is a large discrepency between the kalman filter estimates and sensor measured data.</p>
+
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_14.png" alt="Generic placeholder image", height="450"> 
+  <br>
+  <br>
+  <br>
+
+  <p style="text-align: left;padding: 0px 30px;"> For sigma 1 and sigma2 equals 20 and sigma 3 equals 20, we do not have a large bias towards trusting either side of data, and we can see the kf result is not much off from the measured data. </p>
+
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_15.png" alt="Generic placeholder image", height="450"> 
+  <br>
+  <br>
+
+  <h4> 3. Extrapolation</h4>
+  <p style="text-align: left;padding: 0px 30px;"> I use extrapolation on the Kalman Filter by introducing additional states at every half of the original sampling interval. More specifially, at each ToF distance data point, a new distance point is computed using the instantaneous speed at the last data point and the time passed (half of the sampling time). In this way, we basically doubling the sampling rate and thus making the robot adjustment more robust.</p>
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_16.png" alt="Generic placeholder image", height="350"> 
+  <br>
+  <br>
+  <br>
+  <br>
+  <img class="img-rounded" src="pics/lab7/lab7_17.png" alt="Generic placeholder image", height="450"> 
+  <br>
+  <br>
+  <br>
+
+  <h3> Reference </h3>
+  <p style="text-align: left;padding: 0px 30px;"> I learn from TA Anya Prabowo's website and lecture slides for the Kalman Filter, I learn the idea of extrapolation from TA Joey and my classmate Zecheng Wang. </p>
+
+
+  </div>
 
     <hr id='lab8'>
     <br>
