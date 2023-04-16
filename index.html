@@ -1304,7 +1304,7 @@ case LAB_7:
   <br>
 
   <h4> 3. Extrapolation</h4>
-  <p style="text-align: left;padding: 0px 30px;"> I use extrapolation on the Kalman Filter by introducing additional states at every half of the original sampling interval. More specifially, at each ToF distance data point, a new distance point is computed using the instantaneous speed at the last data point and the time passed (half of the sampling time). In this way, we basically doubling the sampling rate and thus making the robot adjustment more robust.</p>
+  <p style="text-align: left;padding: 0px 30px;"> I use extrapolation on the Kalman Filter by introducing additional states at every half of the original sampling interval. More specifially, at each ToF distance data point, a new distance point is computed using the instantaneous speed at the last data point and the time passed (half of the sampling time). In this way, we basically doubling the sampling rate and thus making the robot adjustment more robust. The implementation of extrapolation on the robotic car is going to be shown in the lab 8 section. </p>
   <br>
   <img class="img-rounded" src="pics/lab7/lab7_16.png" alt="Generic placeholder image", height="350"> 
   <br>
@@ -1328,7 +1328,125 @@ case LAB_7:
     <br>
       <div style="text-align:center;">
               <h2>Lab 8</h2>
-              <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
+              <h3>Introduction</h3>
+              <p style="text-align: left;padding: 0px 30px;"> In this lab, we integrate what we did in previous labs and try to implement a fast stunt. Since I did position control in lab 6, I will be doing Task A: Position Control in this lab. For the fast stunt, we let our car run at the maximum speed possible 3 meters away from the wall, drive fast forward, and upon reaching a sticky matt at a distance of 0.5 meter away from the wall, the car will make a flip and drive back to the starting line. </p>
+              <h3> Design the stunt </h3>
+              <p style="text-align: left;padding: 0px 30px;"> Below is the arduino code for running the stunt. <br>
+              There are two issues I would like to mention before discussion of my design. <br> <br>
+
+              First, my front sensor oftentimes has trouble detecting long distance, despite the fact that I have set it in the long range mode. Therefore, I hardcoded to run 1.3 seconds until its sensor is close enough to have an accurate reading, and then perform the forward motion, stunt, and go backward. <br> <br>
+
+              Second, I doubt my motors are broken because there is a larger difference between speed of two sides of wheels. In short, when the motor battery is fully charged, I need to give the left side of the motor a PWM value 60-70 higher than the right side of the motor to balance such that the car can go forward and backward in a striaght line. <br> <br>
+
+              At the high level of my design, my car is constantly updating it position, either from the sensor reading when it is available, or from extrapolation calculation when the sensor is not ready. At first, the car will run forward for a hardcoded 3 seconds because the sensor issue mentioned above. And then it will continue move forward until it reaches the matt. The matt detection is enabled by comparision of the distance data (from both sensor and the extrapolation) and the matt postion of 0.5 meter. When it reaches the matt, the car will perform a stunt by reversing the direction of its speed abruptly, and then keep going backward until the time limit of 4 seconds has been reached. <br><br>
+
+            At the lower level of my design, I first define three distance variables: previous distance, current distance from sensor, and current distance from extrapolation. I also have an index variable tracking the indexes of local data arrays. I also have three timing variables keeping track of starting time, previous time, and current time. <br> In each iteration, the previous time and current time get updated. When the sensor data is ready, delta time is calculated as well as the speed. Previous distance and current distances get updated as well. When the sensor data is not ready, extrapolation is activated. current distance is updated by adding up-to-date speed times dealt time. Note that I use separate current distance variables for sensor data (along with speed) and extrapolation calculations. The reaason is that I do not want possibly flawed calcuation in extrapolation affect the recording of sensor data. </p>
+
+<div align="left";>  
+        <h5>Arduino Stunt Script</h5>
+                <pre><code>
+    case LAB_8:
+      int prev_dis;
+      prev_dis = 3000;
+
+      int curr_dis_sensor;
+      curr_dis_sensor = 3000;
+
+      int curr_dis_extra;
+      curr_dis_extra = 3000;
+
+      int index;
+      index = 0;
+
+      float dt;
+      dt= 0;
+
+      float speed;
+      speed = 0;
+
+      float start_reading;
+      start_reading = millis();
+
+      float curr_time_imu;
+      curr_time_imu = millis();
+
+      float prev_time_imu;
+      prev_time_imu = millis();
+
+      distanceSensor1.startRanging(); 
+      // the complete run does not exceed 4 seconds
+      while(curr_time_imu - start_reading <= 4000) {
+      // update previous time and current time
+        prev_time_imu = curr_time_imu;
+        curr_time_imu = millis();
+      // calculate delta t 
+        dt = curr_time_imu - prev_time_imu;
+
+      // if sampling data is ready, get sampling data and calculate speed
+        if(distanceSensor1.checkForDataReady()) {
+            prev_dis = curr_dis_sensor;
+            curr_dis_sensor = distanceSensor1.getDistance(); 
+            speed = (curr_dis_sensor - prev_dis) / dt;
+            d1_arr[index] = curr_dis_sensor;
+
+      // if not ready, update distance using extrapolation 
+        } else {
+          // prev_dis = curr_dis;
+          curr_dis_extra = curr_dis_sensor + dt * speed;
+          d1_arr[index] = curr_dis_extra;
+        }
+
+        time_arr[index] = (int)millis();
+
+      // hardcode forward in 1.3 seconds
+        if (curr_time_imu - start_reading <= 1300) {
+          motor_forward(180);
+          pwm_arr[index] = 180;
+        } else {
+
+          // move forward until reach matt -> stunt
+          if(curr_dis_sensor > 500 || curr_dis_extra > 500) {
+            motor_forward(180);
+            pwm_arr[index] = 180;
+          } else {
+
+          // go backwards
+            motor_backward(-180);
+            pwm_arr[index] = -180;
+          }
+        }
+        index++;
+      } // car stops, data collected 
+      motor_stop();
+      // send data
+        for(int i = 0; i != index; i++){
+            tx_estring_value.clear();
+            tx_estring_value.append("T:");  
+            tx_estring_value.append(time_arr[i]);
+            tx_estring_value.append("|D1:");
+            tx_estring_value.append(d1_arr[i]);
+            tx_estring_value.append("|M:");
+            tx_estring_value.append(pwm_arr[i]);
+            tx_estring_value.append("|");
+            tx_characteristic_string.writeValue(tx_estring_value.c_str());
+        }
+      break;
+
+                </code></pre>
+</div>
+<br><br>
+
+<p style="text-align: left;padding: 0px 30px;"> Here are three demo runs. As shown in the videos, the car is able to run as fast as possible and go back in a straight line. However, there is no stunt. Due to the sensor bias mentioned in the first part of my design, I can not run my car any faster. The upper limit of PWM value is 255. To ensure the car travevls in a straight line, the left side can be as high as 250, which means the right side of the wheels can be as high as 180. By running the car at the highest speed, I was still unable to get the stunt. I tried make the PWM value difference between two sides smaller than 70, the car then cannot travel in a straight line at all.</p>
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/63Ax7ZW0X6o" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<h4> first run </h4>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/SbfTD5jFRQ8" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<h4> second run </h4>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/R6Vs7jKz10U" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<h4> third run </h4>
+
+
+
       </div>
 
     <hr id='lab9'>
@@ -1337,7 +1455,8 @@ case LAB_7:
     <br>
       <div style="text-align:center;">
               <h2>Lab 9</h2>
-              <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
+              <h3>Introduction</h3>
+              <p style="text-align: left;padding: 0px 30px;"> aaa</p>
       </div>
 
     <hr id='lab10'>
