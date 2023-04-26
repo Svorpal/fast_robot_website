@@ -1456,8 +1456,173 @@ case LAB_7:
       <div style="text-align:center;">
               <h2>Lab 9</h2>
               <h3>Introduction</h3>
-              <p style="text-align: left;padding: 0px 30px;"> aaa</p>
-      </div>
+              <p style="text-align: left;padding: 0px 30px;"> In lab 9, we are asked to create a mapping of a static room by letting our cars gather sensor data at 5 different locations in the room. This virtual map will be further compared to a real map of that same room. For my task, I choose to do open-loop control as I was running out of time. </p>
+  <br>
+  <img class="img-rounded" src="pics/lab9/room.png" alt="Generic placeholder image", height="450"> 
+  <br>
+              <h3>Lab Tasks</h3>
+              <p style="text-align: left;padding: 0px 30px;"> For the open-loop orientational control, I decide to let my car to do on-axis turns in 30 small, accurate increments, with each turn the car starts by pointing at the -y direction, having a 12 degrees and 30 turns making up a complete 360 degree rotation. The arduino code for orietation control and the demo video at point (5,3) is shown below. </p>
+              <br> <br>
+<div align="left";>  
+        <h5>Arduino Orientation Control Sensor Sampling Script</h5>
+                <pre><code>
+void motor_rotate() {
+  analogWrite(6,  0);
+  analogWrite(7, 140);
+  analogWrite(13, 200);
+  analogWrite(11, 0);
+} 
+...
+case LAB_9:
+      int index;
+      index = 0;
+      for(int i = 0; i != 30; i++) {
+        motor_rotate();
+        delay(500);
+        motor_stop();
+        delay(500);
+
+        distanceSensor1.startRanging();
+        while(!distanceSensor1.checkForDataReady()) {
+
+        }
+        distance1 = distanceSensor1.getDistance();
+        distanceSensor1.clearInterrupt();
+        distanceSensor1.stopRanging();
+        Serial.print("TOF: ");
+        Serial.println(distance1);
+
+        time_arr[index] = (int)millis();
+        d1_arr[index] = distance1;
+        index++;
+      }
+      ... 
+                </code></pre>
+</div>
+<br><br>
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/4N2PgG4sr-w" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<br> <br>
+             <p style="text-align: left;padding: 0px 30px;"> I run the above code at 5 different required locations in the following order: (5,3), (0,3), (0,0), (-3,-2), (5,-3). Below are the raw distance reading vs time, and the distances are converted into polar coordinates for better visualization. As we can see from the plots, plots for the first runs at each point are similar to the second runs and their shapes make sense.</p>
+<h4>Sampling at point (5,3)</h4>
+<br>
+
+<h4> First Run</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab9/5_3_1.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab9/5_3_2.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+<h4> Second Run</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab9/5_3_3.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab9/5_3_4.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+<br><br> 
+<h4>Sampling at point (0,3)</h4>
+<br>
+
+<h4> First Run</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab9/0_3_1.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab9/0_3_2.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+<h4> Second Run</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab9/0_3_3.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab9/0_3_4.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+<br><br> 
+<h4>Sampling at point (0,0)</h4>
+<br>
+
+<h4> First Run</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab9/0_0_1.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab9/0_0_2.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+<h4> Second Run</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab9/0_0_3.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab9/0_0_4.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+  <br><br> 
+<h4>Sampling at point (-3,-2)</h4>
+<br>
+
+<h4> First Run</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab9/-3_-2_1.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab9/-3_-2_2.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+<h4> Second Run</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab9/-3_-2_3.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab9/-3_-2_4.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+
+<br><br> 
+<h4>Sampling at point (5,-3)</h4>
+<br>
+
+<h4> First Run</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab9/5_-3_1.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab9/5_-3_2.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+<h4> Second Run</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab9/5_-3_3.png" alt="Generic placeholder image", height="350"> 
+  <img class="img-rounded" src="pics/lab9/5_-3_4.png" alt="Generic placeholder image", height="350"> 
+  <br>
+
+<h3> Merge and Plot readings</h3>
+<p style="text-align: left;padding: 0px 30px;"> To get mapping, I first convert the unit of readings from milimeters to feet by dividing them over 304. Second, I calculate the start angle and the angle increment for each robot turn to get my angle data corresponding to the sensor readings. Third, I calculate x and y positions of each data set by using cosine (angle) and sine (angle). To convert from the inertia reference with origin at the measured point to the inertia refernence of the room with the origin at the point (0,0), I added the calcualted x and y positions to the x, y coordinates of the location where the measurement was taken. </p> 
+<div align="left";>  
+        <h5>Mapping Script Example</h5>
+                <pre><code>
+                1. distance = np.array(distance )/ 304.8
+                2.  angle = 2 * np.pi / len(distance)
+                    start_angle = 1.5*np.pi
+                3. data_x = []
+                   data_y = []
+                   for i, j in enumerate(distance):
+                      data_x.append(point_1[0] + np.cos(start_angle + angle*i) * j)
+                      data_y.append((point_1[1] + np.sin(start_angle + angle*i) * j))
+                  plt.plot(data_x, data_y, '.',color='greeb', label='run 1 - 1')
+                </code></pre>
+</div>
+<br><br>
+
+<p style="text-align: left;padding: 0px 30px;"> Two runs at the same locations share similar mapping patterns as well. Below is the mapping for first and second run at location (5,3), as we can see the . plots are very close to the x plots. </p> <br>
+
+ <img class="img-rounded" src="pics/lab9/example_run.png" alt="Generic placeholder image", height="450"> <br>
+
+<p style="text-align: left;padding: 0px 30px;"> Below is the complete mapping of all the runs. Data of some of the repetivie runs at the same location are removed because with them we would not see the graph clearly. From the map, we can see that the sensor data align with the real boundaries, but with a lot of noise and outliers. This is because we can not guarantee that the car will actually rotate by the same angle each time, and thereby leading to errors when we plot them with constant angle increments. To tackle this issue, if I have time, I will use IMU gyroscope readings for the angles and closed loop PID controller to make good mappings. But I was running out of time so I only used open-loop control.</p>
+
+ <img class="img-rounded" src="pics/lab9/map.png" alt="Generic placeholder image", height="450"> <br>
+
+
+
+  </div>
 
     <hr id='lab10'>
     <br>
