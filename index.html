@@ -1334,7 +1334,7 @@ case LAB_7:
               <p style="text-align: left;padding: 0px 30px;"> Below is the arduino code for running the stunt. <br>
               There are two issues I would like to mention before discussion of my design. <br> <br>
 
-              First, my front sensor oftentimes has trouble detecting long distance, despite the fact that I have set it in the long range mode. Therefore, I hardcoded to run 1.3 seconds until its sensor is close enough to have an accurate reading, and then perform the forward motion, stunt, and go backward. <br> <br>
+              First, my front sensor oftentimes has trouble detecting long distance, despite the fact that I have set it in the long range mode. Therefore, I hardcoded to run 1.3 seconds until its sensor is close enough to have an accurate reading, and then perform the forward motion, stunt, and go backward. Later in lab 9, I figured out that the cause was my sensor pointing and leaning downwards towards the ground so they could not read things too far away. But at this point in lab 8, I did not know that and hardcoded theh first 3 secods forward. <br> <br>
 
               Second, I doubt my motors are broken because there is a larger difference between speed of two sides of wheels. In short, when the motor battery is fully charged, I need to give the left side of the motor a PWM value 60-70 higher than the right side of the motor to balance such that the car can go forward and backward in a striaght line. <br> <br>
 
@@ -1607,7 +1607,7 @@ case LAB_9:
                    for i, j in enumerate(distance):
                       data_x.append(point_1[0] + np.cos(start_angle + angle*i) * j)
                       data_y.append((point_1[1] + np.sin(start_angle + angle*i) * j))
-                  plt.plot(data_x, data_y, '.',color='greeb', label='run 1 - 1')
+                  plt.plot(data_x, data_y, '.',color='green', label='run 1 - 1')
                 </code></pre>
 </div>
 <br><br>
@@ -1616,7 +1616,7 @@ case LAB_9:
 
  <img class="img-rounded" src="pics/lab9/example_run.png" alt="Generic placeholder image", height="450"> <br>
 
-<p style="text-align: left;padding: 0px 30px;"> Below is the complete mapping of all the runs. Data of some of the repetivie runs at the same location are removed because with them we would not see the graph clearly. From the map, we can see that the sensor data align with the real boundaries, but with a lot of noise and outliers. This is because we can not guarantee that the car will actually rotate by the same angle each time, and thereby leading to errors when we plot them with constant angle increments. To tackle this issue, if I have time, I will use IMU gyroscope readings for the angles and closed loop PID controller to make good mappings. But I was running out of time so I only used open-loop control.</p>
+<p style="text-align: left;padding: 0px 30px;"> Below is the complete mapping of all the runs. Data of some of the repetivie runs at the same location are removed because with them we would not see the graph clearly. From the map, we can see that the sensor data align with the real boundaries, but with a lot of noise and outliers. This is because we can not guarantee that the car will actually rotate by the same angle each time, and thereby leading to errors when we plot them with constant angle increments. To tackle this issue, if I have time, I will use IMU gyroscope readings for the angles and closed loop PID controller to make good mappings. But I was running out of time so I only used open-loop control. From later labs, I know non-probabilistic methods lead to poor results so my lab 9 actually verifies this. </p>
 
  <img class="img-rounded" src="pics/lab9/map.png" alt="Generic placeholder image", height="450"> <br>
 
@@ -1639,7 +1639,12 @@ case LAB_9:
     <br>
       <div style="text-align:center;">
               <h2>Lab 11</h2>
-              <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
+              <h3> Introduction </h3>
+              <p style="text-align: left;padding: 0px 30px;"> In lab 11, unlike in lab 10 we need to design the filters and simulations, we are given a virtual robot, an  optimized Bayes filter, and its simulation to see if they work on a real robot. </p>
+              <h3> Lab Tasks </h3>
+              <h4> Test Localization in Simulation </h4>
+              <p style="text-align: left;padding: 0px 30px;"> To start, we would like to make sure the given Bayes filter simulation code is correct. We test it by simulation. From the result below, the green trace (ground truth) are very close to the blue trace (belief) and the red trace (odom) makes sense. Hence, we can move on.</p>
+              <img class="img-rounded" src="pics/lab11/lab11_2.png" alt="Generic placeholder image", height="550"> <br>
       </div>
 
     <hr id='lab12'>
