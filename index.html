@@ -59,7 +59,6 @@
             <li><a href="#lab10">Lab 10</a></li> 
             <li><a href="#lab11">Lab 11</a></li> 
             <li><a href="#lab12">Lab 12</a></li> 
-            <li><a href="#lab13">Lab 13</a></li> 
             <li><a href="#about">About</a></li>
             <!-- <li><a href="#???">???</a></li>  -->
           </ul>
@@ -1327,7 +1326,7 @@ case LAB_7:
     <br>
     <br>
       <div style="text-align:center;">
-              <h2>Lab 8</h2>
+              <h2>Lab 8: Stunt</h2>
               <h3>Introduction</h3>
               <p style="text-align: left;padding: 0px 30px;"> In this lab, we integrate what we did in previous labs and try to implement a fast stunt. Since I did position control in lab 6, I will be doing Task A: Position Control in this lab. For the fast stunt, we let our car run at the maximum speed possible 3 meters away from the wall, drive fast forward, and upon reaching a sticky matt at a distance of 0.5 meter away from the wall, the car will make a flip and drive back to the starting line. </p>
               <h3> Design the stunt </h3>
@@ -1454,7 +1453,7 @@ case LAB_7:
     <br>
     <br>
       <div style="text-align:center;">
-              <h2>Lab 9</h2>
+              <h2>Lab 9 : Mapping</h2>
               <h3>Introduction</h3>
               <p style="text-align: left;padding: 0px 30px;"> In lab 9, we are asked to create a mapping of a static room by letting our cars gather sensor data at 5 different locations in the room. This virtual map will be further compared to a real map of that same room. For my task, I choose to do open-loop control as I was running out of time. </p>
   <br>
@@ -1629,7 +1628,7 @@ case LAB_9:
     <br>
     <br>
       <div style="text-align:center;">
-              <h2>Lab 10</h2>
+              <h2>Lab 10: Localization (simulator)</h2>
               <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
       </div>
 
@@ -1638,13 +1637,207 @@ case LAB_9:
     <br>
     <br>
       <div style="text-align:center;">
-              <h2>Lab 11</h2>
+              <h2>Lab 11 : Localization (real)</h2>
               <h3> Introduction </h3>
               <p style="text-align: left;padding: 0px 30px;"> In lab 11, unlike in lab 10 we need to design the filters and simulations, we are given a virtual robot, an  optimized Bayes filter, and its simulation to see if they work on a real robot. </p>
               <h3> Lab Tasks </h3>
               <h4> Test Localization in Simulation </h4>
               <p style="text-align: left;padding: 0px 30px;"> To start, we would like to make sure the given Bayes filter simulation code is correct. We test it by simulation. From the result below, the green trace (ground truth) are very close to the blue trace (belief) and the red trace (odom) makes sense. Hence, we can move on.</p>
               <img class="img-rounded" src="pics/lab11/lab11_2.png" alt="Generic placeholder image", height="550"> <br>
+              <h4> Observation Loop </h4>
+              <p style="text-align: left;padding: 0px 30px;"> To let the robot to make 18 turns counterclockwise with 20 degree increment each, in my open-loop control function for lab 9, I changed my Arudino PWM values and delay time to different values and changed the number of turns from 30 turns to 18 turns. However, my robot was very sensitive to PWM values, delay time, and battery power level. As mentioned in previous labs, my robot requires a PWM difference of more than 50 between two sides, when the delay time is smaller than 150 ms, my robot is hard to rotate even with PWM values larger than 150. On the other hand, when the delay time is large, my robot tends to slide in circles instead of staying at a fixed location. Furthermore, my robot open-loop rotation pattern changes drastically when battery power level drops. Based on all these observations, I decide to resort to my previous implementation in lab 9.  <br> <br>
+              I let my robot make 30 counterclockwise turns with 12 degrees each turn, record and send the data to python side in the same way as it was in lab 9. For each of the four/five location point, I process the data along with the filter separately. </p> <br>
+              <p style="text-align: left;padding: 0px 30px;"> On the python side, I take input sent from the car via bluetooth and applied the given Bayes Filter on it. Below are the code snippets for class functions in the real bot. In get pose, I hard coded the ground truth position data. For example, below is the hardcoded ground truth for location (5,3). In performance observation, the sensored data for that location is futher processed into numpy arrays for the filter. </p>
+
+<div align="left";>  
+        <h5>get_pose and perform_observation_loop</h5>
+                <pre><code>
+    def get_pose(self):
+        """Get robot pose based on odometry
+        
+        Returns:
+            current_odom -- Odometry Pose (meters, meters, degrees)
+        """
+        return (5 * 0.3048, 3 * 0.3048, 0)
+
+
+    def perform_observation_loop(self, rot_vel=120):
+        """Perform the observation loop behavior on the real robot, where the robot does  
+        a 360 degree turn in place while collecting equidistant (in the angular space) sensor
+        readings, with the first sensor reading taken at the robot's current heading. 
+        The number of sensor readings depends on "observations_count"(=18) defined in world.yaml.
+        
+        Keyword arguments:
+            rot_vel -- (Optional) Angular Velocity for loop (degrees/second)
+                        Do not remove this parameter from the function definition, even if you don't use it.
+        Returns:
+            sensor_ranges   -- A column numpy array of the range values (meters)
+            sensor_bearings -- A column numpy array of the bearings at which the sensor readings were taken (degrees)
+                               The bearing values are not used in the Localization module, so you may return a empty numpy array
+        """
+
+              
+        distance = tof_data
+        time = tof_time
+        angle = []
+        time_normalized = []
+        for i in range(len(time)):
+            angle.append(0 + i*12)
+
+        for i in range(len(time)):
+            time_normalized.append((int(time[i]) - int(time[0])) / 1000)
+        
+        distance = [float(i)/1000 for i in distance]
+        angle = [float(i) for i in angle]
+        
+        
+        print(time_normalized)
+        print(distance)
+        print(angle)
+        
+        return np.array(distance)[np.newaxis].T, np.array([]) 
+
+                </code></pre>
+</div>
+<br>
+
+<div align="left";>  
+        <h5>additional code</h5>
+                <pre><code>
+# Get ArtemisBLEController object
+ble = get_ble_controller()
+
+# Connect to the Artemis Device
+ble.connect()
+
+# Initialize RealRobot with a Commander object to communicate with the plotter process
+# and the ArtemisBLEController object to communicate with the real robot
+robot = RealRobot(cmdr, ble)
+
+# Initialize mapper
+# Requires a VirtualRobot object as a parameter
+mapper = Mapper(robot)
+
+# Initialize your BaseLocalization object
+# Requires a RealRobot object and a Mapper object as parameters
+loc = Localization(robot, mapper)
+
+## Plot Map
+cmdr.plot_map()
+                </code></pre>
+</div>
+<br>
+ 
+<p style="text-align: left;padding: 0px 30px;"> In the code snippet below, I update step of the Bayes Filter and plot the corresponding ground truth and calcualted belief. Note that for localization, I defined get_pose function above. Here I am calling get pose function for each of the four points, plus the origin (0,0), for plotting the ground truth points in green. On the other hand, the belif for each point is plotted as a blue point. </p>
+<br>
+<div align="left";>  
+        <h5>Run an update step of the Bayes Filter</h5>
+                <pre><code>
+# Reset Plots
+cmdr.reset_plotter()
+
+# Init Uniform Belief
+loc.init_grid_beliefs()
+
+# Get Observation Data by executing a 360 degree rotation motion
+loc.get_observation_data()
+
+# Run Update Step
+loc.update_step()
+loc.plot_update_step_data(plot_data=True)
+
+# Plot  GT
+current_gt = robot.get_pose()
+cmdr.plot_gt(current_gt[0], current_gt[1])
+                </code></pre>
+</div>
+<br><br>
+
+
+<h4> Point (5,3)</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab11/lab11_5_3_1.png" alt="Generic placeholder image", height="650"> 
+  <img class="img-rounded" src="pics/lab11/lab11_5_3_2.png" alt="Generic placeholder image", height="120"> 
+  <br>
+  <br>
+
+<p style="text-align: left;padding: 0px 30px;"> At point (5,3), The Bayes Algorithm result has a probability over 0.99 that the belief point is one grid downward from the ground truth. The belief angle is -70 degrees, which is also away from the ground truth of 0 degree.  </p>
+
+  <br>
+  <br>
+
+
+<h4> Point (0,3)</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab11/0_3_1.png" alt="Generic placeholder image", height="450"> 
+  <img class="img-rounded" src="pics/lab11/0_3_2.png" alt="Generic placeholder image", height="150"> 
+  <br>
+  <br>
+
+<p style="text-align: left;padding: 0px 30px;"> At point (0,3), The Bayes Algorithm result has a probability over 0.915 that the belief is a grid upper to the ground truth. The belief angle is 70 degrees, which is also away from the ground truth of 0 degree.</p>
+
+  <br>
+  <br>
+
+
+
+<h4> Point (0,0)</h4>
+  <br>
+  <img class="img-rounded" src="pics/lab11/lab11_0_0_1.png" alt="Generic placeholder image", height="650"> 
+  <img class="img-rounded" src="pics/lab11/lab11_0_0_2.png" alt="Generic placeholder image", height="120"> 
+  <br>
+  <br>
+
+<p style="text-align: left;padding: 0px 30px;"> At point (0,0), The Bayes Algorithm result has a probability over 0.99 that the belief is one diagonal to the lower right of the ground truth. The belief angle is -110 degrees, which is also away from the ground truth of 0 degree.</p>
+
+
+
+  <br>
+  <br>
+
+
+<h4> Point (-3,-2)</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab11/-3_-2_1.png" alt="Generic placeholder image", height="450"> 
+  <img class="img-rounded" src="pics/lab11/-3_-2_2.png" alt="Generic placeholder image", height="150"> 
+  <br>
+  <br>
+
+<p style="text-align: left;padding: 0px 30px;">  At point (-3,-2), The Bayes Algorithm result has a probability over 0.92 that the belief is at the same location as ground truth is.  The belief angle is 30 degrees, which is also away from the ground truth angle of 0 degree but not as far away compared to previous points.</p>
+
+
+  <br>
+  <br>
+
+
+
+<h4> Point (5,-3)</h4>
+
+  <br>
+  <img class="img-rounded" src="pics/lab11/5_-3_1.png" alt="Generic placeholder image", height="450"> 
+  <img class="img-rounded" src="pics/lab11/5_-3_2.png" alt="Generic placeholder image", height="150"> 
+  <br>
+  <br>
+
+<p style="text-align: left;padding: 0px 30px;">  At point (5,-3), The Bayes Algorithm result has a probability over 0.83 that the belief is at the same location as ground truth is. The belief angle is 30 degrees, which is also away from the ground truth angle of 0 degree but not as far away compared to some of the previous points.  </p>
+
+  <br>
+  <br>
+
+<h3> Discussion </h3>
+<p style="text-align: left;padding: 0px 30px;"> 
+From the results, we can see that the for point (-3, -2), the belief perfectly overlaps with the ground truth. For (5,3), the belief is one grid down. For (0,3), the belief is one grid up. For (0,0), the belief is one diagmoal to the lower right. For (5,-3), the belief is about one and a half diagonal to the lower left. There are many reasons I can think of for these obseravtions.  <br>
+(1) I used open-loop control, and there was no gurantee that each turn will result in a fixed and same angle increment. Hence, the real robot has non-linear angle mapping which contradicts with the linear increment we used in our Bayes Filter for calculating beleif.  <br>
+(2) Due to symmetry in landscapes, our Bayes model can mistakenly consider the location of the real robot to be in another location or with another starting angel where similar distance measurements can happen. <br>
+(3) As mentioned in previous labs, my sensors are not super accurate and often have measuremnts with noise, this would result in wrong measured data. As a result, going back to (2), our Bayes model will consider the point to be in a poistion and/or starts with a different angle. <br>
+(4) My robot does not stay at the same point when measuremnts were taken, it moved and shifted a bit away from the desginated point, this can result in different sensor measruments than theoretical values, so our observations and beliefs actually make sense. <br>
+(5) For the last point (5,-3), the probability is only 0.83. The reason for this is probably that the voltage for my car dropped a lot throughout the measurements. At the last point, the decresed voltage caused the PWM spinning control to become unstale, and my car made a large circle around (5,-3). Hence, along with noise, our Bayes Model have lower probability computing the belief. 
+</p>
+
+
       </div>
 
     <hr id='lab12'>
@@ -1652,16 +1845,7 @@ case LAB_9:
     <br>
     <br>
       <div style="text-align:center;">
-              <h2>Lab 12</h2>
-              <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
-      </div>
-
-    <hr id='lab13'>
-    <br>
-    <br>
-    <br>
-      <div style="text-align:center;">
-              <h2>Lab 13</h2>
+              <h2>Lab 12 : Path Planning and Execution</h2>
               <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
       </div>
 
