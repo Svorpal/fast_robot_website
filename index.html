@@ -1667,22 +1667,35 @@ case LAB_9:
                
 
                <h3> Odometry Motion Model </h3>
+               <p style="text-align: left;padding: 0px 30px;">
+               This function calculates the probability of ending up in the current state given a control action and robot's previous state. <br>
+
+To compute the probability, Gaussian functions are used to model noise. 
+              </p>
 
                <img class="img-rounded" src="pics/lab10/odom_motion_model.png" alt="Generic placeholder image", height="350"> <br> <br>
 
                <h3> Prediction Step </h3>
-
+               <p style="text-align: left;padding: 0px 30px;">
+                The prediction_step takes current and previous odometry data, and then fills in the 3D matrix with marginal probability distributions. 
+                Only Odometry data is being used here. Sensor data will later be included in the sensor model. 
+               </p>
                <img class="img-rounded" src="pics/lab10/prediction_step.png" alt="Generic placeholder image", height="450"> <br> <br>
 
                <h3> Sensor Model </h3>
+               <p style="text-align: left;padding: 0px 30px;">
+              Sensor readings are incorprated into the model. More specifically, we used Gaussian models to check the corrlation between the sensor data and actual values at each pose and compute probability for 18 different measreumens. 
 
+               </p>
                <img class="img-rounded" src="pics/lab10/sensor_model.png" alt="Generic placeholder image", height="250"> <br> <br>
 
                <h3> Update Step </h3>
+               <p style="text-align: left;padding: 0px 30px;">
+                This function essentially just updates the bel matrix with the probability distribution of each pose given the sensor measurements. 
+               </p>
 
                <img class="img-rounded" src="pics/lab10/update_step.png" alt="Generic placeholder image", height="300"> <br> <br>
 
-              </p>
               <br>
 
               <h3> Demo Result </h3>
