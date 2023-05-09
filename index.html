@@ -1630,23 +1630,71 @@ case LAB_9:
       <div style="text-align:center;">
               <h2>Lab 10: Localization (simulator)</h2>
               <h3>Introduction </h3>
-              <p style="text-align: left;padding: 0px 30px;">In lab 10, we implement robot localization with the Bayes filter. Building upon mapping from lab 9 and in-class simluation tests, lab 10 aims to use solely the simulator, withhout the robot, to run a virtual robot with the implemented Bayes filter. We will further compare the results from a  simulated virtual robot to those from a real robot. At here, we are just having a sanity check of the correctness of our Bayens Filter Model. </p>
+              <p style="text-align: left;padding: 0px 30px;">In lab 10, we implement robot localization with the Bayes filter. Building upon mapping from lab 9 and in-class simluation tests, lab 10 aims to use solely the simulator, withhout the robot, to run a virtual robot with the implemented Bayes filter. We will further compare the results from a  simulated virtual robot to those from a real robot in the next lab -- lab 11, but at here, we are just having a sanity check of the correctness of our Bayens Filter Model. </p>
               <h3> Map in the simulator </h3>
               <p style="text-align: left;padding: 0px 30px;">
               Robot localization is the process of determining where a mobile robot is located with respect to its environment. Plotting odometry against the ground truth in the lab 9 resulted in poor results, and that is why we switched to a probalisitic method of Bayes Filter. <br> <br>
 
+              The robot state is 3 dimensional and is given by (x,y,θ). The robot’s world is a continuous space that spans from:  <br><br>
 
-[-1.6764, +1.9812) meters or [-5.5, 6.5) feet in the x direction.
-[-1.3716, +1.3716) meters or [-4.5, +4.5) feet in the y direction.
-[-180, +180) degrees along the theta axis.
-The virtual robot shown in the simulator image before is at the state of (0, 0, 0) (initial state). The X-axis increases from left to right, the Y-axis increases from bottom to top and the Theta-axis increases if robot spins clockwise and decreases if robot spins counter-clockwise.
+              [-1.6764, +1.9812) meters or [-5.5, 6.5) feet in the x direction. <br>
+              [-1.3716, +1.3716) meters or [-4.5, +4.5) feet in the y direction. <br>
+              [-180, +180) degrees along the theta axis. <br> <br>
+
+               <img class="img-rounded" src="pics/lab10/lab10_2.png" alt="Generic placeholder image", height="450"> <br> <br>
+               As shown in image above, the virtual robot starts at position (0,0,0), which corresponods to x = 0, y = 0, and θ = 0. The x axis to the left of the inital position of the robot are negatives whereas to the right are positives. The y-axis above the origin is positive y axis whereas the other half below the origin is negative y-axis. The theta-axis increases if robot spins clockwise and decreases if robot spins counter-clockwise. <br> <br>
+               To solve the problem of inifite many posed the robot might be inside the given region, we discretize the continous state space into a 3D grid space composed of grid cells shown below. <br> <br>
+
+               <img class="img-rounded" src="pics/lab10/3d_grid.jpg" alt="Generic placeholder image", height="450"> <br> <br> </p>
+
+               <h3> Bayes Filter Design </h3>
+               <p style="text-align: left;padding: 0px 30px;">
+                And then we move on to implement the Bayes Filter using python. The image is from past student Owen Deng's website. The Bayes filter algorithm has two steps -- a prediction step and an update step. The prediction step uses the control input to predict a prior belief, which will then be fed into the update step which takes in the actual sensor measurements. 
+               </p>
+
+               <br> <br>
+
+               <img class="img-rounded" src="pics/lab10/bayes_filter_algo.png" alt="Generic placeholder image", height="250"> <br> <br>
+
+               <h3> Compute Control function </h3> <br>
+               <p style="text-align: left;padding: 0px 30px;">
+               This function computes Ut in the above formula, it takes a current and previous pose and computes the required actions to get the robot from the previous pose to the current pose by computing the first rotation, the translation, and the second rotation described in the diagram from lecture: <br>
+               </p>
+
+               <img class="img-rounded" src="pics/lab10/compute_control_diagram.png" alt="Generic placeholder image", height="350"> <br> <br>
+
+               <img class="img-rounded" src="pics/lab10/compute_control.png" alt="Generic placeholder image", height="400"> <br> <br>
+               
+
+               <h3> Odometry Motion Model </h3>
+
+               <img class="img-rounded" src="pics/lab10/odom_motion_model.png" alt="Generic placeholder image", height="350"> <br> <br>
+
+               <h3> Prediction Step </h3>
+
+               <img class="img-rounded" src="pics/lab10/prediction_step.png" alt="Generic placeholder image", height="450"> <br> <br>
+
+               <h3> Sensor Model </h3>
+
+               <img class="img-rounded" src="pics/lab10/sensor_model.png" alt="Generic placeholder image", height="250"> <br> <br>
+
+               <h3> Update Step </h3>
+
+               <img class="img-rounded" src="pics/lab10/update_step.png" alt="Generic placeholder image", height="300"> <br> <br>
+
               </p>
+              <br>
 
+              <h3> Demo Result </h3>
+<p style="text-align: left;padding: 0px 30px;"> Demo video shown below has belief in blue and ground truth in green, and odometry in red. As we can see, the belief from our Bayes Filter is very close to the ground truth, but the red odometry lines deviate a lot from the ground truth. Hence, our Bayes Filter is pretty robust. </p>
 <iframe width="640" height="360" src="https://www.youtube.com/embed/bsi_tdlfjVc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<br> <br>
+<p style="text-align: left;padding: 0px 30px;"> *** output of each step is attached to this link: ***</p>
+<a href="https://github.com/Svorpal/fast_robot_website/blob/main/pics/lab10/result.txt">Output of each step</a><br>
 
 
-
-
+              <h3>Acknowledgement</h3>
+              <p style="text-align: left;padding: 0px 30px;"> For reference, I looked at past students Owen Deng and Ryan Chan's webistes. Furthermore, I also looked into the given Bayes code from lab 11 to get some ideas. Moreover, I got some system descriptions from the course website and from my classmate Zecheng Wang.</p>
 
 
 
@@ -1881,7 +1929,7 @@ From the results, we can see that the for point (-3, -2), the belief perfectly o
                 <img class="img-rounded" src="pics/a.jpg" alt="Generic placeholder image" width="280" height="240">
                 <h3>Michael Wu </h3>
                 <p class="lead">yw2464@cornell.edu</p>
-                <p style="text-align: left;padding: 0px 30px;"> I am a ECE Master of Engineering Studenting focusing on an embedded software track, so I am more than excited to take this class! I got my Bachelor of Science in EE at UCLA, where I studied analog circuit, CMOS, waves back then. I am more into Computer Engineering with embedded systems as they are more fun in my opinion!</p>
+                <p style="text-align: left;padding: 0px 30px;"> I am a ECE Master of Engineering student focusing on an embedded software track, so I am more than excited to take this class! I got my Bachelor of Science in EE at UCLA, where I studied analog circuit, CMOS, waves back then. I am more into Computer Engineering with embedded systems as they are more fun in my opinion!</p>
             </div>
       </div>
 
