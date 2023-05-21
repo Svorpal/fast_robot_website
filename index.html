@@ -1929,8 +1929,268 @@ From the results, we can see that the for point (-3, -2), the belief perfectly o
     <br>
       <div style="text-align:center;">
               <h2>Lab 12 : Path Planning and Execution</h2>
-              <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
+
+              <h3> Introduction </h3> 
+
+              <p style="text-align: left;padding: 0px 30px;"> In lab 12, the final lab, we are trying to have the robot navigate through a set of waypoints in the same map we were using since lab 9, in a quick and accurate fashion.</p>
+
+
+              <h3> Task Description </h3>
+              <p style="text-align: left;padding: 0px 30px;"> Our task is to have the robot hit the following waypoints given in the units of grid cells as it moves acorss the map. </p>
+
+              <img class="img-rounded" src="pics/lab12/lab12_1.png" alt="Generic placeholder image", height="250"> 
+              <h4> <b> Wavepints coordinates (grids) </b> </h4> <br>
+
+              <img class="img-rounded" src="pics/lab12/lab12_2.png" alt="Generic placeholder image", height="400"> 
+              <h4> <b> Robot Movement trace in simulation </b> </h4> <br>
+
+
+              <h3> Lab Task </h3>
+              <h4> Acknowledgement </h4>
+              <p style="text-align: left;padding: 0px 30px;"> I collaborated with Zechen Wang and Zhongqi Tao for lab 12. We discuessed plans and strategies but wrote our own codes. For the demo runs, we all used Zecheng's robot because it has the most smooth performance. Thank them for their help! </p>
+
+              <h4> Design Rationale </h4>
+              <p style="text-align: left;padding: 0px 30px;"> Since we are running out of time in the final weeks, we decide to use a combination of open-loop control and PID control to finish path panning and execution. Moreover, we decided to follow the same path as shown on the course website and in the order shown in the image named "wavepints coordniates(grid)" above. More specifically, we first use hard code: let the robot run with pre-defined PWM values for a fixed amount of delay time, and then change the PWM values and delay time to change direction or run for a different distance. We had success in travesing some of the wavepoints but not the rest of them, especially the last three points. </p>
+
+              <img class="img-rounded" src="pics/lab12/lab12_3.png" alt="Generic placeholder image", height="400"> 
+              <h4> <b> Robot Movement trace in simulation </b> </h4> <br>
+ 
+              <p style="text-align: left;padding: 0px 30px;"> The reason behind this situation is that the last few points require the robot to make 90 degree turns and move in long distances, whose requirement is much stricter than the previous points. </p>
+
+              <p style="text-align: left;padding: 0px 30px;"> For example, if the car stops earlier, it can crash into an osbtacle and get stuck. shown in the video below for point (5,-3), wrong distance control leads to the robot making its turn before reaching the point (5, -3), and thereby crashing into the wall to its left. Note that using making the delay time longer is not a good option either because as the battery level drops, the car would still stop before reaching (5,-3). This is the downside of open-loop control. </p>
+
+              <iframe width="640" height="360" src="https://www.youtube.com/embed/K8WAaZEhQgs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              <h4> Robot stops early before (5,-3) </h4> <br>
+
+              <p style="text-align: left;padding: 0px 30px;"> On the other hand, if the car stops too late and travels some distance beyond the designated wavepoint, it can crash into the wall and get stuck. At the same time, it will affect the rest of its journey as well. For example, as shown in the video below, the car stops too late after reaching (5,3), along with its wrong angle of orientation, crash into the wall after it makes its turn.  </p> 
+
+              <iframe width="640" height="360" src="https://www.youtube.com/embed/SiO5_aPhtpo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+              <h4> Robot stops too late after  (5,3) </h4> <br>
+
+             <p style="text-align: left;padding: 0px 30px;"> To solve this issue, we decided to usse PID controller for the latter half of the car's journey. We first tried position PID controller and it worked good enough, so we did not add additional Orientation PID. </p> 
+
+             <h4> Design Code Walkthrough </h4>
+
+             <p style="text-align: left;padding: 0px 30px;"> On the Python side, my code is starightforward: send a lab_12 command to the Artemis Board via bluetooth. On the Arudino side, the code is a bit long and is shown in the code block below. </p>
+
+             <p style="text-align: left;padding: 0px 30px;"> In the Beginning, the car is placed at point (-4,-3) facing east(right) or 0 degree in the coordinate. <br> (1) From the first point (-4,-3) to the second point (-2,-1), we let the car rotate counterclockwise for 160 millseconds to find the right orientation, and stop the car. Furthermore, we drive the motor at 75 PWM values forward and actively brakes the car by driving the motor backward with a PWM value of 50, and then we stop the car the the second point (-2.-1). </p>
+
+             <div align="left";>
+              <h5>(-4, -3) to (-2,-1) </h5>
+                <pre><code>
+                // waypoint 1 to 2
+                  motor_rotate(ccw);
+                  delay(160);
+                  motor_stop();
+                  delay(50);
+
+                  motor_forward(75);
+                  delay(900);
+                  motor_backward(50);
+                  delay(300);
+                  motor_stop();
+                  delay(300);
+                </code></pre>
+             </div>
+
+             <p style="text-align: left;padding: 0px 30px;"> (2) From (-2, -1) to (1, -1), we need to rotate our car clockwise to let it face right again, and then we stop the car. Furthremore, to horizontally move 3 grids to the right, we try the car forward using a PWM of 75 for 1 second, and we apply brake again, stop the car after it reaches (1, -1).</p>
+
+             <div align="left";>
+              <h5>(-2, -1) to (1, -1)</h5>
+                <pre><code>
+                // waypoint 2 to 3
+                motor_rotate(cw);
+                delay(140);
+                motor_stop();
+                delay(50);
+
+                motor_forward(75);
+                delay(1000);
+                motor_backward(50);
+                delay(300);
+                motor_stop();
+                delay(300);
+                </code></pre>
+             </div>
+
+
+             <p style="text-align: left;padding: 0px 30px;"> (3) From (1, -1) to  (2, -3), we need to move the car to the lower-right in the map. And since it is facing to the east/right now, we need it to rotate counter-clockwise and move forward. To do so, we rotate the car counterclockwise for 140 ms and then make it stop. After getting it to the right orientation, we move the car forwrd by a PWM value of 75 for 1 second, brake it and then stop it at the new point (2,-3).</p>
+
+             <div align="left";>
+              <h5>(1, -1) to (2, -3)</h5>
+                <pre><code>
+                 // waypoint 3 to 4
+                motor_rotate(ccw);
+                delay(140);
+                motor_stop();
+                delay(50);
+
+                motor_forward(75);
+                delay(1000);
+                motor_backward(50);
+                delay(300);
+                motor_stop();
+                delay(300);
+                </code></pre>
+             </div>
+
+
+             <p style="text-align: left;padding: 0px 30px;"> (4) From (2, -3) to (5, -3). We first need to rotate the car to the left a little bit to let it face the right wall. We achieve that by rotating the car counterclockwise for 300 ms and then stop the car. In addition, we apply a distance PID controller to ensure the car will stop exactly 2 from the right wall.  </p>
+
+             <div align="left";>
+              <h5>(2, -3) to (5, -3)</h5>
+                <pre><code>
+        // waypoint 4 to 5
+        motor_rotate(ccw);
+        delay(300);
+        motor_stop();
+        delay(500);
+
+        motor_forward(75);
+
+        setpoint = 600;
+        distance1 = 2000;
+        while (distance1 > setpoint) {
+          distanceSensor1.startRanging(); 
+
+          while ( !distanceSensor1.checkForDataReady() )
+          {
+
+          }
+
+          distance1 = distanceSensor1.getDistance();
+          distanceSensor1.clearInterrupt();
+          distanceSensor1.stopRanging();        
+        }
+
+        motor_backward(50);
+        delay(150);
+        motor_stop();
+        delay(200);
+                </code></pre>
+             </div>
+
+
+             <p style="text-align: left;padding: 0px 30px;"> (5) From (5,-3) to (5,-2) to (5,3), we have similar control to the previous one with different setpoints for PID.  </p>
+
+             <div align="left";>
+              <h5>(5,-3) to (5,-2) to (5,3)</h5>
+                <pre><code>
+        // waypoint 5 to 6 to 7.
+        motor_rotate(ccw);
+        delay(300);
+        motor_stop();
+        delay(500);
+
+        motor_forward(75);
+
+        setpoint = 800;
+        distance1 = 2000;
+        while (distance1 > setpoint) {
+          distanceSensor1.startRanging(); 
+
+          while ( !distanceSensor1.checkForDataReady() )
+          {
+
+          }
+
+          distance1 = distanceSensor1.getDistance();
+          distanceSensor1.clearInterrupt();
+          distanceSensor1.stopRanging();        
+        }
+
+        motor_backward(50);
+        delay(150);
+        motor_stop();
+        delay(200);
+                </code></pre>
+             </div>
+
+
+   <p style="text-align: left;padding: 0px 30px;"> (5) From (5,3) to (0,3), we have similar control to the previous one with different setpoints for PID.  </p>
+
+             <div align="left";>
+              <h5>(5,3) to (0,3)</h5>
+                <pre><code>
+        // waypoint 7 to 8.
+        motor_rotate(ccw);
+        delay(300);
+        motor_stop();
+        delay(500);
+
+        motor_forward(75);
+
+        setpoint = 1700;
+        distance1 = 2000;
+        while (distance1 > setpoint) {
+          distanceSensor1.startRanging(); 
+
+          while ( !distanceSensor1.checkForDataReady() )
+          {
+
+          }
+
+          distance1 = distanceSensor1.getDistance();
+          distanceSensor1.clearInterrupt();
+          distanceSensor1.stopRanging();        
+        }
+
+        motor_backward(50);
+        delay(150);
+        motor_stop();
+        delay(200);
+                </code></pre>
+             </div>
+
+       
+       <p style="text-align: left;padding: 0px 30px;"> (5) From (0,3) to (0,0), we have similar control to the previous one with different setpoints for PID.  </p>
+
+             <div align="left";>
+              <h5>(0,3) to (0,0)</h5>
+                <pre><code>
+        // waypoint 8 to 9.
+        motor_rotate(ccw);
+        delay(300);
+        motor_stop();
+        delay(500);
+
+        motor_forward(75);
+
+        setpoint = 1100;
+        distance1 = 2000;
+        while (distance1 > setpoint) {
+          distanceSensor1.startRanging(); 
+
+          while ( !distanceSensor1.checkForDataReady() )
+          {
+
+          }
+
+          distance1 = distanceSensor1.getDistance();
+          distanceSensor1.clearInterrupt();
+          distanceSensor1.stopRanging();        
+        }
+
+        motor_backward(50);
+        delay(150);
+        motor_stop();
+        delay(200);
+                </code></pre>
+             </div>
+
+<p style="text-align: left;padding: 0px 30px;"> Below are videos of three demo runs. They are all very successful in terms of travesering all of the wavepoints. There are slight differences between each run because battely level drops as we run our car and friction changes as I walk through the map while taking videos for the previous runs. </p>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/htpK0aMIB88" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<h4> 1st Run </h4> <br>
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/Vnpxy7e2xKc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<h4> 2nd Run </h4> <br>
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/Q-6RsK73d4Y" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<h4> 3rd Run </h4> <br>
+
       </div>
+
+</div>
 
     <hr id='about'>
     <br>
@@ -1946,67 +2206,9 @@ From the results, we can see that the for point (-3, -2), the belief perfectly o
             </div>
       </div>
 
-<!--    <hr id='???'>
-    <br>
-      <div style="text-align:center;">
-              <h2>???</h2>
-              <p style="text-align: left;padding: 0px 30px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum lorem nulla, consectetur at leo vel, pretium bibendum nisl. Cras blandit quam a enim ultrices, eu convallis enim posuere. Donec eleifend enim sed purus consectetur, vitae cursus lectus varius. Vivamus consectetur felis nec est venenatis posuere. Phasellus vitae aliquet erat. In laoreet lacinia mollis. Quisque iaculis nisl fermentum pharetra lobortis. Donec rhoncus dui sem, ac molestie leo tristique vel. Phasellus in nibh feugiat, fringilla lectus in, elementum magna. Etiam quis dui condimentum, tempus ex in, dapibus est. Cras ut congue augue. Donec ac enim ex. Ut id tristique risus, vel porttitor quam. Sed ultricies enim eu nibh porttitor, vel sodales enim feugiat. Fusce volutpat venenatis magna ac ultrices. Curabitur eget urna ut nulla mattis convallis non eu diam.</p>
-      </div> -->
-<!--     <hr>
-
-    <div class="row" style="text-align:center;">
-          <h2>Work Distribution</h2>
-          <div style="text-align:center;">
-              <img class="img-rounded" src="pics/group.jpg" alt="Generic placeholder image" style="width:80%;">
-              <h4>Project group picture</h4>
-          </div>
-          <div class="col-md-6" style="font-size:16px">
-              <img class="img-rounded" src="pics/a.png" alt="Generic placeholder image" width="240" height="240">
-              <h3>Rick</h3>
-              <p class="lead">netid@cornell.edu</p>
-              <p>Designed the overall software architecture (Just being himself).
-          </div>
-          <div class="col-md-6" style="font-size:16px">
-              <img class="img-rounded" src="pics/b.png" alt="Generic placeholder image" width="240" height="240">
-              <h3>Morty</h3>
-              <p class="lead">netid@cornell.edu</p>
-              <p>Tested the overall system.
-          </div>
-      </div>
 
     <hr>
-      <div style="font-size:18px">
-          <h2>Parts List</h2>
-          <ul>
-              <li>Raspberry Pi $35.00</li>
-              <li>Raspberry Pi Camera V2 $25.00</li>
-              <a href="https://www.adafruit.com/product/1463"><li>NeoPixel Ring - $9.95</li></a>
-              <li>LEDs, Resistors and Wires - Provided in lab</li>
-          </ul>
-          <h3>Total: $69.95</h3>
-      </div>
-      <hr>
-      <div style="font-size:18px">
-          <h2>References</h2>
-          <a href="https://picamera.readthedocs.io/">PiCamera Document</a><br>
-          <a href="http://www.micropik.com/PDF/SG90Servo.pdf">Tower Pro Servo Datasheet</a><br>
-          <a href="http://getbootstrap.com/">Bootstrap</a><br>
-          <a href="http://abyz.co.uk/rpi/pigpio/">Pigpio Library</a><br>
-          <a href="https://sourceforge.net/p/raspberry-gpio-python/wiki/Home/">R-Pi GPIO Document</a><br>
 
-      </div>
- -->
-    <hr>
-
-      <div class="row">
-              <h2>Code Appendix</h2>
-              <pre><code>
-// Hello World.c
-int main(){
-  printf("Hello World.\n");
-}
-              </code></pre>
-      </div>
 
     </div><!-- /.container -->
 
